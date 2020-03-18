@@ -10,7 +10,7 @@
 
 bool HttpRequest(const char *url, std::string &response)
 {
-	if (const auto internet = InternetOpenA("axstin/rbxfpsunlocker", INTERNET_OPEN_TYPE_PRECONFIG, nullptr, nullptr, NULL))
+	if (const auto internet = InternetOpenA("LewisTehMinerz/RFU", INTERNET_OPEN_TYPE_PRECONFIG, nullptr, nullptr, NULL))
 	{
 		if (const auto request = InternetOpenUrlA(internet, url, nullptr, 0, INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
 		{
@@ -60,7 +60,7 @@ bool CheckForUpdates()
 	if (latest_version != RFU_VERSION)
 	{
 		char buffer[256];
-		sprintf_s(buffer, "A new version of Roblox FPS Unlocker is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?", RFU_VERSION, latest_version.c_str());
+		sprintf_s(buffer, "A new version of RFU is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?", RFU_VERSION, latest_version.c_str());
 
 		if (MessageBoxA(nullptr, buffer, "Update Check", MB_YESNOCANCEL | MB_ICONEXCLAMATION) == IDYES)
 		{
