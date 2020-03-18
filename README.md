@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/LewisTehMinerz/RFU/master/repository-header.png">
+  <img src="https://raw.githubusercontent.com/LewisTehMinerz/RFU/master/repository-banner.png">
 </p>
 <p align="center">
   A rewrite of <a href="https://github.com/axstin/rbxfpsunlocker">Roblox FPS Unlocker</a>.
