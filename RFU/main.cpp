@@ -244,7 +244,7 @@ struct RobloxProcess
 			{
 				if (error) retries_left = 0; // if FindTaskScheduler returned an error it already retried 5 times. TODO: remove
 				if (retries_left-- <= 0)
-					NotifyError("rbxfpsunlocker Error", error ? error : "Unable to find TaskScheduler! This is probably due to a Roblox update-- watch the github for any patches or a fix.");
+					NotifyError("RFU Error", error ? error : "Unable to find TaskScheduler! This is probably due to a Roblox update -- watch the github for any patches or a fix.");
 				return;
 			}
 		}
@@ -261,7 +261,7 @@ struct RobloxProcess
 					if (delay_offset == -1)
 					{
 						if (retries_left-- <= 0)
-							NotifyError("rbxfpsunlocker Error", "Variable scan failed! This is probably due to a Roblox update-- watch the github for any patches or a fix.");
+							NotifyError("RFU Error", "Variable scan failed! This is probably due to a Roblox update -- watch the github for any patches or a fix.");
 						return;
 					}
 
@@ -276,7 +276,7 @@ struct RobloxProcess
 			{
 				printf("[%p] RobloxProcess::Tick failed: %s (%lu)\n", handle, e.what(), e.GetLastError());
 				if (retries_left-- <= 0)
-					NotifyError("rbxfpsunlocker Error", "An exception occurred while performing the variable scan.");
+					NotifyError("RFU Error", "An exception occurred while performing the variable scan.");
 			}
 		}
 	}
@@ -435,10 +435,12 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	{
 		if (CheckRunning())
 		{
-			MessageBoxA(nullptr, "Roblox FPS Unlocker is already running", "Error", MB_OK);
+			MessageBoxA(nullptr, "RFU is already running", "Error", MB_OK);
 		}
 		else
 		{
+			UI::CreateHiddenConsole();
+			
 			// if we aren't silent, we need to show the console initially for output
 			if (!UI::IsSilent)
 			{
