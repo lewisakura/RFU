@@ -61,6 +61,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			
 			const auto attachedProcs = attachedProcsRaw.data();
 
+			AppendMenu(popup, MF_STRING | MF_GRAYED, RFU_TRAYMENU_APC, L"Version: " RFU_VERSION);
 			AppendMenu(popup, MF_STRING | MF_GRAYED, RFU_TRAYMENU_APC, attachedProcs);
 			AppendMenu(popup, MF_SEPARATOR, 0, nullptr);
 
