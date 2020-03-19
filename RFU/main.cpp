@@ -313,7 +313,7 @@ void SetFPSCapExternal(const double value)
 void pause()
 {
 	printf("Press enter to continue . . .");
-	void(getchar());
+	(void)getchar();
 }
 
 DWORD WINAPI WatchThread(LPVOID)
