@@ -41,9 +41,9 @@ namespace sigscan
 		{
 			for (; start < end - strlen(mask); ++start)
 			{
-				if (compare((char *)start, (char *)aob, mask))
+				if (compare(reinterpret_cast<char*>(start), const_cast<char*>(aob), mask))
 				{
-					return (uint8_t *)start;
+					return reinterpret_cast<uint8_t*>(start);
 				}
 			}
 		}
@@ -67,11 +67,11 @@ namespace sigscan
 		
 		if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(module), &info, sizeof info))
 		{
-			printf("scan(): got module info");
+			printf("scan(): got module info\n");
 			return scan(aob, mask, unsigned(info.lpBaseOfDll), uintptr_t(&info.lpBaseOfDll + info.SizeOfImage));
 		}
 
-		printf("scan(): failed");
+		printf("scan(): failed\n");
 		return nullptr;
 	}
 }
