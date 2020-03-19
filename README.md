@@ -17,6 +17,7 @@ C++ compiler. With the removal of Blackbone, antivirus false positives should be
 You need to install the Visual C++ redistributable. Here are the links to the correct ones:
 * [64-bit](https://aka.ms/vs/16/release/vc_redist.x64.exe)
 * [32-bit](https://aka.ms/vs/16/release/vc_redist.x86.exe)
+
 You can install both, however you only actually need to install the one for the version of RFU you are running.
 ## How can I see my FPS?
 Press `SHIFT + F5` in game. In Studio, go to `View -> Stats -> Summary`.
