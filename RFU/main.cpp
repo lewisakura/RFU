@@ -310,6 +310,45 @@ void SetFPSCapExternal(const double value)
 	}
 }
 
+bool RunsOnStartup()
+{
+	HKEY hK;
+	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Run)", &hK);
+	const auto result = RegQueryValueExA(hK, RFU_REGKEY, nullptr, nullptr, nullptr, nullptr);
+	const auto returnVal = result != ERROR_NO_MATCH && result != ERROR_FILE_NOT_FOUND;
+
+	RegCloseKey(hK);
+	
+	return returnVal;
+}
+
+void SetRunOnStartup(bool shouldRun)
+{
+	HKEY hK;
+	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Run)", &hK);
+	if (shouldRun)
+	{
+		HKEY hK;
+		const auto ourModule = GetModuleHandle(nullptr);
+		char path[MAX_PATH];
+
+		GetModuleFileNameA(ourModule, path, sizeof path);
+
+		// path size + quotes + space + --silent + zero terminator
+		const auto filePathSize = strlen(path) + 2 + 1 + 7 + 1;
+		char corrected[sizeof path + 2 + 1 + 7 + 1];
+		sprintf_s(corrected, "\"%s\" --silent\0", path);
+		
+		RegSetValueExA(hK, RFU_REGKEY, 0, REG_SZ, reinterpret_cast<BYTE*>(corrected), filePathSize);
+		RegCloseKey(hK);
+	} else
+	{
+		RegDeleteValueA(hK, RFU_REGKEY);
+	}
+
+	RegCloseKey(hK);
+}
+
 void pause()
 {
 	printf("Press enter to continue . . .");

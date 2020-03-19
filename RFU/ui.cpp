@@ -25,6 +25,8 @@
 #define RFU_TRAYMENU_ADV_NBE	WM_APP + 10
 #define RFU_TRAYMENU_ADV_SE		WM_APP + 11
 
+#define RFU_TRAYMENU_STARTUP    WM_APP + 12
+
 #define RFU_FCS_FIRST			(WM_APP + 20)
 #define RFU_FCS_NONE			RFU_FCS_FIRST + 0
 #define RFU_FCS_30				RFU_FCS_FIRST + 1
@@ -88,6 +90,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_LOADSET, L"Load Settings");
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_CONSOLE, L"Toggle Console");
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_GITHUB, L"Visit GitHub");
+			AppendMenu(popup, MF_STRING | (RunsOnStartup() ? MF_CHECKED : 0), RFU_TRAYMENU_STARTUP, L"Run on Startup");
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_EXIT, L"Exit");
 
 			SetForegroundWindow(hwnd); // to allow "clicking away"
@@ -138,6 +141,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					if (Settings::SilentErrors) CheckMenuItem(popup, RFU_TRAYMENU_ADV_NBE, MF_GRAYED);
 					break;
 
+				case RFU_TRAYMENU_STARTUP:
+					// switch
+					SetRunOnStartup(!RunsOnStartup());
+					break;
+					
 				default:
 					if (result >= RFU_FCS_FIRST
 						&& result <= RFU_FCS_LAST)
@@ -151,6 +159,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (result != RFU_TRAYMENU_CONSOLE
 					&& result != RFU_TRAYMENU_LOADSET
 					&& result != RFU_TRAYMENU_GITHUB
+					&& result != RFU_TRAYMENU_STARTUP
 					&& result != RFU_TRAYMENU_EXIT)
 				{
 					Settings::Update();
