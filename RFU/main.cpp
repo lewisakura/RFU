@@ -328,7 +328,6 @@ void SetRunOnStartup(bool shouldRun)
 	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Run)", &hK);
 	if (shouldRun)
 	{
-		HKEY hK;
 		const auto ourModule = GetModuleHandle(nullptr);
 		char path[MAX_PATH];
 
