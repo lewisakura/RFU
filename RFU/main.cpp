@@ -195,7 +195,7 @@ void NotifyError(const char* title, const char* error)
 		CONSOLE_SCREEN_BUFFER_INFO info{};
 		GetConsoleScreenBufferInfo(console, &info);
 
-		const WORD color = info.wAttributes & 0xFF00 | FOREGROUND_RED | FOREGROUND_INTENSITY;
+		const WORD color = info.wAttributes & (0xFF00 | FOREGROUND_RED | FOREGROUND_INTENSITY);
 		SetConsoleTextAttribute(console, color);
 
 		printf("[ERROR] %s\n", error);
