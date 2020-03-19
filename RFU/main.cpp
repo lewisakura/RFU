@@ -461,8 +461,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 				UI::ToggleConsole();
 			}
-
-			NotifyError("RFU", "test");
+			
 			return UI::Start(hInstance, WatchThread);
 		}
 	}
