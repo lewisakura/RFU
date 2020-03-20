@@ -13,7 +13,7 @@ modernizes the code, and also removes dead code. This makes it slightly faster, 
 C++ compiler. With the removal of Blackbone, antivirus false positives should be less common than they were before.
 
 # FAQ
-## I'm getting an error saying that "VCRUNTIME140_1.DLL" is missing! Why?
+## I'm getting an error saying that "VCRUNTIME140.DLL" is missing! Why?
 You need to install the Visual C++ redistributable. Here are the links to the correct ones:
 * [64-bit](https://aka.ms/vs/16/release/vc_redist.x64.exe)
 * [32-bit](https://aka.ms/vs/16/release/vc_redist.x86.exe)
