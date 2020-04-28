@@ -158,7 +158,7 @@ void *ScanRegion(const HANDLE process, const char *aob, const char *mask, const 
 	{
 		size_t bytes_read = 0;
 
-		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), static_cast<SIZE_T*>(&bytes_read)) && bytes_read >= aob_len)
+		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), reinterpret_cast<SIZE_T*>(&bytes_read)) && bytes_read >= aob_len)
 		{
 			if (const auto result = sigscan::scan(aob, mask, uintptr_t(buffer.data()), uintptr_t(buffer.data()) + bytes_read))
 			{
