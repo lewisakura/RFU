@@ -61,7 +61,7 @@ namespace Settings
 					else if (key == "SilentErrors")
 						SilentErrors = std::stoi(value) != 0;
 				}
-				catch (std::exception& e)
+				catch ([[maybe_unused]] std::exception& e)
 				{
 					// catch string conversion errors
 				}

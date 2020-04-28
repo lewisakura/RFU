@@ -58,13 +58,19 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\RFU.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="RFU.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icons\dark.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icons\light.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icons\red.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -166,10 +166,12 @@
     <ClInclude Include="rfu.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\RFU.ico" />
+    <ResourceCompile Include="RFU.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="RFU.rc" />
+    <Image Include="icons\dark.ico" />
+    <Image Include="icons\light.ico" />
+    <Image Include="icons\red.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

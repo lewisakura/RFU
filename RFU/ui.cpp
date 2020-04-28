@@ -191,6 +191,11 @@ void UI::CreateHiddenConsole()
 {
 	AllocConsole();
 
+	const auto hIcon = reinterpret_cast<LPARAM>(GetIcon(GetModuleHandle(nullptr), IsAppDarkMode()));
+	
+	SendMessage(GetConsoleWindow(), WM_SETICON, ICON_BIG, hIcon);
+	SendMessage(GetConsoleWindow(), WM_SETICON, ICON_SMALL, hIcon);
+	
 	FILE* pCout{};
 	FILE* pCin{};
 	freopen_s(&pCout, "CONOUT$", "w", stdout);
@@ -246,10 +251,10 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 
 	NotifyIconData.cbSize = sizeof NotifyIconData;
 	NotifyIconData.hWnd = Window;
-	NotifyIconData.uID = IDI_ICON1;
+	NotifyIconData.uID = ICON_LIGHT;
 	NotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 	NotifyIconData.uCallbackMessage = RFU_TRAYICON;
-	NotifyIconData.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_ICON1));
+	NotifyIconData.hIcon = GetIcon(instance, IsSystemDarkMode());
 	wcscpy_s(NotifyIconData.szTip , L"RFU");
 
 	Shell_NotifyIcon(NIM_ADD, &NotifyIconData);
@@ -269,4 +274,41 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 	}
 
 	return msg.wParam;
+}
+
+
+bool UI::IsSystemDarkMode()
+{
+	HKEY hK;
+	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hK);
+
+	DWORD v = 0;
+	DWORD dataSize = sizeof v;
+	
+	RegGetValueA(hK, nullptr, "SystemUseLightTheme", RRF_RT_REG_DWORD, nullptr, &v, &dataSize);
+	RegCloseKey(hK);
+
+	return v == 0;
+}
+
+bool UI::IsAppDarkMode()
+{
+	HKEY hK;
+	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hK);
+
+	DWORD v = 0;
+	DWORD dataSize = sizeof v;
+
+	RegGetValueA(hK, nullptr, "AppsUseLightTheme", RRF_RT_REG_DWORD, nullptr, &v, &dataSize);
+	RegCloseKey(hK);
+
+	return v == 0;
+}
+
+HICON UI::GetIcon(const HINSTANCE instance, const bool dark)
+{
+	if (dark)
+		return LoadIcon(instance, MAKEINTRESOURCE(ICON_LIGHT));
+	
+	return LoadIcon(instance, MAKEINTRESOURCE(ICON_DARK));
 }

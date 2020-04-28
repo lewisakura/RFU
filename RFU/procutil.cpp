@@ -46,7 +46,7 @@ std::vector<HMODULE> ProcUtil::GetProcessModules(HANDLE process)
 	std::vector<HMODULE> result;
 
 	DWORD last = 0;
-	DWORD needed;
+	DWORD needed = 0;
 
 	while (true)
 	{
@@ -138,7 +138,7 @@ bool ProcUtil::FindModuleInfo(HANDLE process, const std::filesystem::path& path,
 				return true;
 			}
 		}
-		catch (std::filesystem::filesystem_error& e)
+		catch ([[maybe_unused]] std::filesystem::filesystem_error& e)
 		{
 			// ignored
 		}
@@ -158,7 +158,7 @@ void *ScanRegion(const HANDLE process, const char *aob, const char *mask, const 
 	{
 		size_t bytes_read = 0;
 
-		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), (SIZE_T *)&bytes_read) && bytes_read >= aob_len)
+		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), static_cast<SIZE_T*>(&bytes_read)) && bytes_read >= aob_len)
 		{
 			if (const auto result = sigscan::scan(aob, mask, uintptr_t(buffer.data()), uintptr_t(buffer.data()) + bytes_read))
 			{
@@ -188,7 +188,7 @@ void *ProcUtil::ScanProcess(const HANDLE process, const char *aob, const char *m
 			return nullptr;
 		}
 
-		size_t size = mbi.RegionSize - (i - static_cast<const uint8_t*>(mbi.BaseAddress));
+		auto size = mbi.RegionSize - (i - static_cast<const uint8_t*>(mbi.BaseAddress));
 		if (i + size >= end) size = end - i;
 
 		if (mbi.State & MEM_COMMIT && mbi.Protect & PAGE_READABLE && !(mbi.Protect & PAGE_GUARD))
@@ -222,14 +222,11 @@ bool ProcUtil::IsProcess64Bit(HANDLE process)
 {
 	if (IsOS64Bit())
 	{
-		BOOL result;
+		auto result = 0;
 		if (!IsWow64Process(process, &result))
 			throw WindowsException("unable to check process wow64");
 
 		return result == 0;
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }

@@ -178,7 +178,7 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 			}
 		}
 	}
-	catch (ProcUtil::WindowsException& e)
+	catch ([[maybe_unused]] ProcUtil::WindowsException& e)
 	{
 		printf("[%p] WindowsException occurred, GetLastError() = %d\n", process, GetLastError());
 	}
@@ -442,7 +442,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		printf("Waiting for Roblox...\n");
 
-		HANDLE process;
+		HANDLE process = nullptr;
 
 		do
 		{
@@ -469,38 +469,38 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		return 0;
 	}
+	
+	if (CheckRunning())
+	{
+		MessageBoxA(nullptr, "RFU is already running", "Error", MB_OK);
+	}
 	else
 	{
-		if (CheckRunning())
-		{
-			MessageBoxA(nullptr, "RFU is already running", "Error", MB_OK);
-		}
-		else
-		{
-			UI::CreateHiddenConsole();
+		UI::CreateHiddenConsole();
 			
-			// if we aren't silent, we need to show the console initially for output
-			if (!UI::IsSilent)
-			{
-				UI::ToggleConsole();
-			}
-
-			// check for updates regardless
-			if (Settings::CheckForUpdates)
-			{
-				printf("Checking for updates...\n");
-				if (CheckForUpdates()) return 0;
-			}
-
-			// and carry on.
-			if (!UI::IsSilent) {
-				printf("Minimizing to system tray in 2 seconds...\n");
-				Sleep(2000);
-
-				UI::ToggleConsole();
-			}
-			
-			return UI::Start(hInstance, WatchThread);
+		// if we aren't silent, we need to show the console initially for output
+		if (!UI::IsSilent)
+		{
+			UI::ToggleConsole();
 		}
+
+		// check for updates regardless
+		if (Settings::CheckForUpdates)
+		{
+			printf("Checking for updates...\n");
+			if (CheckForUpdates()) return 0;
+		}
+
+		// and carry on.
+		if (!UI::IsSilent) {
+			printf("Minimizing to system tray in 2 seconds...\n");
+			Sleep(2000);
+
+			UI::ToggleConsole();
+		}
+			
+		return UI::Start(hInstance, WatchThread);
 	}
+
+	return 0;
 }

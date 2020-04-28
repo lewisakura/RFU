@@ -52,7 +52,11 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "..\\RFU.ico"
+ICON_RED                ICON                    "icons\\red.ico"
+
+ICON_DARK               ICON                    "icons\\dark.ico"
+
+ICON_LIGHT              ICON                    "icons\\light.ico"
 
 #endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////
