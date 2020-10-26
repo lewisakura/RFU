@@ -16,12 +16,15 @@
 
 HANDLE SingletonMutex;
 
-std::vector<HANDLE> GetRobloxProcesses(bool include_studio = true)
+std::vector<HANDLE> GetRobloxProcesses(bool include_client = true, bool include_studio = true)
 {
 	std::vector<HANDLE> result;
-	for (auto handle : ProcUtil::GetProcessesByImageName(L"RobloxPlayerBeta.exe")) result.emplace_back(handle);
+	if (include_client)
+	{
+		for (auto handle : ProcUtil::GetProcessesByImageName(L"RobloxPlayerBeta.exe")) result.emplace_back(handle);
+		for (auto handle : ProcUtil::GetProcessesByImageName(L"Windows10Universal.exe")) result.emplace_back(handle);
+	}
 	if (include_studio) for (auto handle : ProcUtil::GetProcessesByImageName(L"RobloxStudioBeta.exe")) result.emplace_back(handle);
-	for (auto handle : ProcUtil::GetProcessesByImageName(L"Windows10Universal.exe")) result.emplace_back(handle);
 	return result;
 }
 
@@ -360,7 +363,7 @@ DWORD WINAPI WatchThread(LPVOID)
 
 	while (true)
 	{
-		auto processes = GetRobloxProcesses(Settings::UnlockStudio);
+		auto processes = GetRobloxProcesses(Settings::UnlockClient, Settings::UnlockStudio);
 
 		for (auto& process : processes)
 		{
@@ -492,7 +495,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 
 		// and carry on.
-		if (!UI::IsSilent) {
+		if (!UI::IsSilent)
+		{
 			printf("Minimizing to system tray in 2 seconds...\n");
 			Sleep(2000);
 
