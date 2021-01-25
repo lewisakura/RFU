@@ -59,11 +59,11 @@ std::vector<HMODULE> ProcUtil::GetProcessModules(HANDLE process)
 	}
 }
 
-ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE module)
+ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE hmodule)
 {
 	ModuleInfo result;
 
-	if (module == nullptr)
+	if (hmodule == nullptr)
 	{
 		/*
 			GetModuleInformation works with hModule set to NULL with the caveat that lpBaseOfDll will be NULL aswell: https://doxygen.reactos.org/de/d86/dll_2win32_2psapi_2psapi_8c_source.html#l01102
@@ -104,11 +104,11 @@ ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE module)
 	else
 	{
 		char buffer[MAX_PATH];
-		if (!GetModuleFileNameExA(process, module, buffer, sizeof buffer)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
+		if (!GetModuleFileNameExA(process, hmodule, buffer, sizeof buffer)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
 			throw WindowsException("unable to get module file name");
 
 		MODULEINFO mi;
-		if (!GetModuleInformation(process, module, &mi, sizeof mi)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
+		if (!GetModuleInformation(process, hmodule, &mi, sizeof mi)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
 			throw WindowsException("unable to get module information");
 
 		result.path = buffer;
@@ -124,11 +124,11 @@ bool ProcUtil::FindModuleInfo(HANDLE process, const std::filesystem::path& path,
 {
 	printf("ProcUtil::FindModuleInfo: path = %s\n", path.string().c_str());
 
-	for (auto module : GetProcessModules(process))
+	for (auto hmodule : GetProcessModules(process))
 	{
 		try
 		{
-			auto info = GetModuleInfo(process, module);
+			auto info = GetModuleInfo(process, hmodule);
 
 			printf("ProcUtil::FindModuleInfo: info.path = %s\n", path.string().c_str());
 

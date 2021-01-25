@@ -61,11 +61,11 @@ namespace sigscan
 		return nullptr;
 	};
 
-	uint8_t *scan(LPCWSTR module, const char *aob, const char *mask)
+	uint8_t *scan(LPCWSTR hmodule, const char *aob, const char *mask)
 	{
 		MODULEINFO info;
 		
-		if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(module), &info, sizeof info))
+		if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(hmodule), &info, sizeof info))
 		{
 			printf("scan(): got module info\n");
 			return scan(aob, mask, unsigned(info.lpBaseOfDll), uintptr_t(&info.lpBaseOfDll + info.SizeOfImage));

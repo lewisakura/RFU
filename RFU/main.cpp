@@ -114,7 +114,7 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 		{
 			printf("[%p] Init ProcessInfo\n", process);
 			info = ProcUtil::ProcessInfo(process);
-			if (info.module.base != nullptr)
+			if (info.hmodule.base != nullptr)
 				break;
 
 			if (tries--)
@@ -130,8 +130,8 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 			}
 		}
 
-		const auto start = static_cast<const uint8_t*>(info.module.base);
-		const auto end = start + info.module.size;
+		const auto start = static_cast<const uint8_t*>(info.hmodule.base);
+		const auto end = start + info.hmodule.size;
 
 		printf("[%p] Process Base: %p\n", process, start);
 

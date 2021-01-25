@@ -44,7 +44,7 @@ namespace ProcUtil
 	HANDLE GetProcessByImageName(LPWSTR image_name);
 
 	std::vector<HMODULE> GetProcessModules(HANDLE process);
-	ModuleInfo GetModuleInfo(HANDLE process, HMODULE module);
+	ModuleInfo GetModuleInfo(HANDLE process, HMODULE hmodule);
 	bool FindModuleInfo(HANDLE process, const std::filesystem::path& name, ModuleInfo& out);
 	void *ScanProcess(HANDLE process, const char *aob, const char *mask, const uint8_t *start = nullptr, const uint8_t *end = (const uint8_t *)UINTPTR_MAX);
 	
@@ -117,7 +117,7 @@ namespace ProcUtil
 	struct ProcessInfo
 	{
 		HANDLE handle = nullptr;
-		ModuleInfo module;
+		ModuleInfo hmodule;
 
 		DWORD id = 0;
 		std::string name;
@@ -160,9 +160,9 @@ namespace ProcUtil
 		{
 			id = GetProcessId(handle);
 			printf("[%p] Got ID %d\n", handle, id);
-			module = GetModuleInfo(handle, nullptr);
+			hmodule = GetModuleInfo(handle, nullptr);
 			printf("[%p] Got ModuleInfo\n", handle);
-			name = module.path.filename().string();
+			name = hmodule.path.filename().string();
 			printf("[%p] Got module name\n", handle);
 			
 			if (find_window)
