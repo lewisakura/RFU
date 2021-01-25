@@ -13,7 +13,7 @@ std::vector<HANDLE> ProcUtil::GetProcessesByImageName(LPCWSTR image_name, size_t
 	PROCESSENTRY32 entry;
 	entry.dwSize = sizeof(PROCESSENTRY32);
 
-	const auto snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+	auto* const snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 	size_t count = 0;
 
 	if (Process32First(snapshot, &entry) == TRUE)
@@ -22,10 +22,13 @@ std::vector<HANDLE> ProcUtil::GetProcessesByImageName(LPCWSTR image_name, size_t
 		{
 			if (_wcsicmp(entry.szExeFile, image_name) == 0)
 			{
-				if (auto process = OpenProcess(access, FALSE, entry.th32ProcessID))
+				if (auto* process = OpenProcess(access, FALSE, entry.th32ProcessID))
 				{
 					result.push_back(process);
 					count++;
+				} else
+				{
+					printf("OpenProcess failed, maybe try running as administrator? GetLastError() = %lu\n", GetLastError());
 				}
 			}
 		}
@@ -38,7 +41,7 @@ std::vector<HANDLE> ProcUtil::GetProcessesByImageName(LPCWSTR image_name, size_t
 HANDLE ProcUtil::GetProcessByImageName(LPWSTR image_name)
 {
 	auto processes = GetProcessesByImageName(image_name, 1);
-	return processes.size() > 0 ? processes[0] : nullptr;
+	return !processes.empty() ? processes[0] : nullptr;
 }
 
 std::vector<HMODULE> ProcUtil::GetProcessModules(HANDLE process)
@@ -124,7 +127,7 @@ bool ProcUtil::FindModuleInfo(HANDLE process, const std::filesystem::path& path,
 {
 	printf("ProcUtil::FindModuleInfo: path = %s\n", path.string().c_str());
 
-	for (auto hmodule : GetProcessModules(process))
+	for (auto* hmodule : GetProcessModules(process))
 	{
 		try
 		{
@@ -147,7 +150,7 @@ bool ProcUtil::FindModuleInfo(HANDLE process, const std::filesystem::path& path,
 	return false;
 }
 
-void *ScanRegion(const HANDLE process, const char *aob, const char *mask, const uint8_t *base, size_t size)
+void *ScanRegion(HANDLE process, const char *aob, const char *mask, const uint8_t *base, size_t size)
 {
 	std::vector<uint8_t> buffer;
 	buffer.resize(READ_LIMIT);
@@ -160,7 +163,8 @@ void *ScanRegion(const HANDLE process, const char *aob, const char *mask, const 
 
 		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), reinterpret_cast<SIZE_T*>(&bytes_read)) && bytes_read >= aob_len)
 		{
-			if (const auto result = sigscan::scan(aob, mask, uintptr_t(buffer.data()), uintptr_t(buffer.data()) + bytes_read))
+			if (auto* const result = sigscan::scan(aob, mask, reinterpret_cast<uintptr_t>(buffer.data()),
+			                                       reinterpret_cast<uintptr_t>(buffer.data()) + bytes_read))
 			{
 				return const_cast<uint8_t*>(base) + (result - buffer.data());
 			}
@@ -176,9 +180,9 @@ void *ScanRegion(const HANDLE process, const char *aob, const char *mask, const 
 }
 
 
-void *ProcUtil::ScanProcess(const HANDLE process, const char *aob, const char *mask, const uint8_t *start, const uint8_t *end)
+void *ProcUtil::ScanProcess(HANDLE process, const char *aob, const char *mask, const uint8_t *start, const uint8_t *end)
 {
-	auto i = start;
+	const auto* i = start;
 
 	while (i < end)
 	{

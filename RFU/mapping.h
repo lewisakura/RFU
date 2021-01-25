@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 
-class FileMapping
+class FileMapping  // NOLINT(cppcoreguidelines-special-member-functions)
 {
 	HANDLE file = nullptr;
 	HANDLE mapping = nullptr;
@@ -20,7 +20,7 @@ public:
 			if (file == INVALID_HANDLE_VALUE) return nullptr;
 		}
 
-		mapping = CreateFileMappingA(file ? file : INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, map_name);
+		mapping = CreateFileMappingA(file ? file : INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, map_name);  // NOLINT(clang-diagnostic-shorten-64-to-32)
 		if (mapping == nullptr)
 		{
 			Close();
@@ -73,7 +73,7 @@ public:
 		return static_cast<T>(view);
 	}
 
-	bool IsOpen()
+	[[nodiscard]] bool IsOpen() const
 	{
 		return view != nullptr;
 	}

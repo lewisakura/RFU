@@ -23,7 +23,7 @@ namespace sigscan
 
 	bool compare_reverse(const char *location, const char *aob, const char *mask)
 	{
-		auto mask_iter = mask + strlen(mask) - 1;
+		const auto* mask_iter = mask + strlen(mask) - 1;
 		for (; mask_iter >= mask; --aob, --mask_iter, --location)
 		{
 			if (*mask_iter == 'x' && *location != *aob)
@@ -68,7 +68,8 @@ namespace sigscan
 		if (GetModuleInformation(GetCurrentProcess(), GetModuleHandleW(hmodule), &info, sizeof info))
 		{
 			printf("scan(): got module info\n");
-			return scan(aob, mask, unsigned(info.lpBaseOfDll), uintptr_t(&info.lpBaseOfDll + info.SizeOfImage));
+			return scan(aob, mask, reinterpret_cast<unsigned>(info.lpBaseOfDll),  // NOLINT(clang-diagnostic-void-pointer-to-int-cast)
+			            reinterpret_cast<uintptr_t>(&info.lpBaseOfDll + info.SizeOfImage));
 		}
 
 		printf("scan(): failed\n");

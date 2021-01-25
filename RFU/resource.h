@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by RFU.rc
 //
+// ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 #define IDI_ICON1                       2
 #define ICON_RED                        101
 #define ICON_DARK                       102

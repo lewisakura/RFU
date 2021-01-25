@@ -1,3 +1,4 @@
+// ReSharper disable CppFunctionalStyleCast
 #pragma once
 
 #include <Windows.h>
@@ -8,7 +9,7 @@
 #include <filesystem>
 #include <stdexcept>
 
-#define PAGE_READABLE (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_READONLY | PAGE_READWRITE)
+#define PAGE_READABLE (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_READONLY | PAGE_READWRITE)  // NOLINT(cppcoreguidelines-macro-usage)
 
 namespace ProcUtil
 {
@@ -22,7 +23,7 @@ namespace ProcUtil
 		{
 		}
 
-		DWORD GetLastError() const
+		[[nodiscard]] DWORD GetLastError() const
 		{
 			return last_error;
 		}
@@ -45,8 +46,9 @@ namespace ProcUtil
 
 	std::vector<HMODULE> GetProcessModules(HANDLE process);
 	ModuleInfo GetModuleInfo(HANDLE process, HMODULE hmodule);
-	bool FindModuleInfo(HANDLE process, const std::filesystem::path& name, ModuleInfo& out);
-	void *ScanProcess(HANDLE process, const char *aob, const char *mask, const uint8_t *start = nullptr, const uint8_t *end = (const uint8_t *)UINTPTR_MAX);
+	bool FindModuleInfo(HANDLE process, const std::filesystem::path& path, ModuleInfo& out);
+	void* ScanProcess(HANDLE process, const char* aob, const char* mask, const uint8_t* start = nullptr,
+	                  const uint8_t* end = reinterpret_cast<const uint8_t*>(UINTPTR_MAX));
 	
 	bool IsOS64Bit();
 	bool IsProcess64Bit(HANDLE process);
@@ -61,14 +63,17 @@ namespace ProcUtil
 	T Read(HANDLE process, const void *location)
 	{
 		T value;
-		if (!ReadProcessMemory(process, location, static_cast<LPVOID>(&value), sizeof(T), nullptr)) throw WindowsException("unable to read process memory");
+		if (!ReadProcessMemory(process, location, static_cast<LPVOID>(&value), sizeof(T), nullptr)) throw
+			WindowsException("unable to read process memory");
 		return value;
 	}
 
 	inline const void *ReadPointer(HANDLE process, const void *location)
 	{
 #ifdef _WIN64
-		return IsProcess64Bit(process) ? (const void *)Read<uint64_t>(process, location) : (const void *)Read<uint32_t>(process, location);
+		return IsProcess64Bit(process)
+			       ? reinterpret_cast<const void*>(Read<uint64_t>(process, location))
+			       : reinterpret_cast<const void*>(Read<uint32_t>(process, location));
 #else
 		return Read<const void *>(process, location);
 #endif
@@ -77,7 +82,8 @@ namespace ProcUtil
 	template <typename T>
 	void Write(HANDLE process, const void *location, const T& value)
 	{
-		if (!WriteProcessMemory(process, (LPVOID) location, static_cast<LPCVOID>(&value), sizeof(T), nullptr)) throw WindowsException("unable to write process memory");
+		if (!WriteProcessMemory(process, const_cast<LPVOID>(location), static_cast<LPCVOID>(&value), sizeof(T), nullptr))
+			throw WindowsException("unable to write process memory");
 	}
 
 	template <size_t N, typename T>
@@ -89,11 +95,13 @@ namespace ProcUtil
 			Write(process, alloc, arg);
 			Write(process, alloc + sizeof(T), code);
 
-			if (const auto thread = CreateRemoteThread(process, nullptr, 0, (LPTHREAD_START_ROUTINE)(alloc + sizeof(T)), (LPVOID) alloc, NULL, nullptr))
+			if (const auto thread = CreateRemoteThread(process, nullptr, 0,
+			                                           LPTHREAD_START_ROUTINE(alloc + sizeof(T)),
+			                                           LPVOID(alloc), NULL, nullptr))
 			{
 				WaitForSingleObject(thread, INFINITE);
 				arg = Read<T>(process, alloc);
-				VirtualFreeEx(process, (LPVOID) alloc, 0, MEM_RELEASE);
+				VirtualFreeEx(process, LPVOID(alloc), 0, MEM_RELEASE);
 				return true;
 			}
 		}
@@ -108,7 +116,7 @@ namespace ProcUtil
 		size_t size = 0;
 		void *entry_point = nullptr;
 
-		HMODULE GetHandle() const
+		[[nodiscard]] HMODULE GetHandle() const
 		{
 			return static_cast<HMODULE>(base);
 		}
@@ -129,9 +137,9 @@ namespace ProcUtil
 		{
 			window = nullptr;
 
-			EnumWindows([](HWND window, LPARAM param) -> BOOL
+			EnumWindows([](HWND window, LPARAM param) -> BOOL  // NOLINT(clang-diagnostic-shadow)
 			{
-				auto info = reinterpret_cast<ProcessInfo*>(param);
+				auto* info = reinterpret_cast<ProcessInfo*>(param);
 
 				DWORD process_id;
 				GetWindowThreadProcessId(window, &process_id);
@@ -147,19 +155,18 @@ namespace ProcUtil
 				}
 
 				return TRUE;
-			}, LPARAM(this));
+			}, reinterpret_cast<LPARAM>(this));
 
 			return window != nullptr;
 		}
 
-		ProcessInfo()
-		{}
+		ProcessInfo() = default;
 
 		ProcessInfo(HANDLE handle, bool find_window = false)
 			: handle(handle)
 		{
 			id = GetProcessId(handle);
-			printf("[%p] Got ID %d\n", handle, id);
+			printf("[%p] Got ID %lu\n", handle, id);
 			hmodule = GetModuleInfo(handle, nullptr);
 			printf("[%p] Got ModuleInfo\n", handle);
 			name = hmodule.path.filename().string();

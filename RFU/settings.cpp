@@ -6,7 +6,7 @@
 
 #include "rfu.h"
 
-FileMapping IPC;
+FileMapping ipc;  // NOLINT(clang-diagnostic-exit-time-destructors)
 
 namespace Settings
 {
@@ -50,7 +50,7 @@ namespace Settings
 					if (key == "VSyncEnabled")
 						VSyncEnabled = std::stoi(value) != 0;
 					else if (key == "FPSCapSelection")
-						FPSCapSelection = std::stoi(value);
+						FPSCapSelection = std::stoi(value);  // NOLINT(clang-diagnostic-implicit-int-conversion)
 					else if (key == "FPSCap")
 						FPSCap = std::stod(value);
 					else if (key == "UnlockClient")

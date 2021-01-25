@@ -13,29 +13,31 @@
 #include "settings.h"
 #include "rfu.h"
 
-#define RFU_TRAYICON			WM_APP + 1
-#define RFU_TRAYMENU_APC		WM_APP + 2
-#define RFU_TRAYMENU_CONSOLE	WM_APP + 3
-#define RFU_TRAYMENU_EXIT		WM_APP + 4
-#define RFU_TRAYMENU_VSYNC		WM_APP + 5
-#define RFU_TRAYMENU_LOADSET	WM_APP + 6
-#define RFU_TRAYMENU_GITHUB		WM_APP + 7
-#define RFU_TRAYMENU_STUDIO		WM_APP + 8
-#define RFU_TRAYMENU_CFU		WM_APP + 9
-#define RFU_TRAYMENU_ADV_NBE	WM_APP + 10
-#define RFU_TRAYMENU_ADV_SE		WM_APP + 11
-#define RFU_TRAYMENU_STARTUP    WM_APP + 12
-#define RFU_TRAYMENU_CLIENT     WM_APP + 13
+// ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
+#define RFU_TRAYICON			(WM_APP + 1)
+#define RFU_TRAYMENU_APC		(WM_APP + 2)
+#define RFU_TRAYMENU_CONSOLE	(WM_APP + 3)
+#define RFU_TRAYMENU_EXIT		(WM_APP + 4)
+//#define RFU_TRAYMENU_VSYNC		(WM_APP + 5)
+#define RFU_TRAYMENU_LOADSET	(WM_APP + 6)
+#define RFU_TRAYMENU_GITHUB		(WM_APP + 7)
+#define RFU_TRAYMENU_STUDIO		(WM_APP + 8)
+#define RFU_TRAYMENU_CFU		(WM_APP + 9)
+#define RFU_TRAYMENU_ADV_NBE	(WM_APP + 10)
+#define RFU_TRAYMENU_ADV_SE		(WM_APP + 11)
+#define RFU_TRAYMENU_STARTUP    (WM_APP + 12)
+#define RFU_TRAYMENU_CLIENT     (WM_APP + 13)
 
 #define RFU_FCS_FIRST			(WM_APP + 20)
-#define RFU_FCS_NONE			RFU_FCS_FIRST + 0
-#define RFU_FCS_30				RFU_FCS_FIRST + 1
-#define RFU_FCS_60				RFU_FCS_FIRST + 2
-#define RFU_FCS_75				RFU_FCS_FIRST + 3
-#define RFU_FCS_120				RFU_FCS_FIRST + 4
-#define RFU_FCS_144				RFU_FCS_FIRST + 5
-#define RFU_FCS_240				RFU_FCS_FIRST + 6
+#define RFU_FCS_NONE			(RFU_FCS_FIRST + 0)
+#define RFU_FCS_30				(RFU_FCS_FIRST + 1)
+#define RFU_FCS_60				(RFU_FCS_FIRST + 2)
+#define RFU_FCS_75				(RFU_FCS_FIRST + 3)
+#define RFU_FCS_120				(RFU_FCS_FIRST + 4)
+#define RFU_FCS_144				(RFU_FCS_FIRST + 5)
+#define RFU_FCS_240				(RFU_FCS_FIRST + 6)
 #define RFU_FCS_LAST			(RFU_FCS_240)
+// ReSharper enable CppClangTidyCppcoreguidelinesMacroUsage
 
 HWND UI::Window = nullptr;
 int UI::AttachedProcessesCount = 0;
@@ -47,31 +49,32 @@ NOTIFYICONDATA NotifyIconData;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (uMsg)
-	{
-	case RFU_TRAYICON:
+	if (uMsg == RFU_TRAYICON)
 	{
 		if (lParam == WM_RBUTTONDOWN || lParam == WM_LBUTTONDOWN)
 		{
 			POINT position;
 			GetCursorPos(&position);
 
-			const auto popup = CreatePopupMenu();
+			auto* const popup = CreatePopupMenu();
 
 			std::wstring attachedProcsRaw = L"Attached Processes: ";
 			attachedProcsRaw += std::to_wstring(UI::AttachedProcessesCount);
-			
-			const auto attachedProcs = attachedProcsRaw.data();
+
+			auto* const attachedProcs = attachedProcsRaw.data();
 
 			AppendMenu(popup, MF_STRING | MF_GRAYED, RFU_TRAYMENU_APC, L"Version: " RFU_VERSION);
 			AppendMenu(popup, MF_STRING | MF_GRAYED, RFU_TRAYMENU_APC, attachedProcs);
 			AppendMenu(popup, MF_SEPARATOR, 0, nullptr);
 
-			AppendMenu(popup, MF_STRING | (Settings::UnlockClient ? MF_CHECKED : 0), RFU_TRAYMENU_CLIENT, L"Unlock Client");
-			AppendMenu(popup, MF_STRING | (Settings::UnlockStudio ? MF_CHECKED : 0), RFU_TRAYMENU_STUDIO, L"Unlock Studio");
-			AppendMenu(popup, MF_STRING | (Settings::CheckForUpdates ? MF_CHECKED : 0), RFU_TRAYMENU_CFU, L"Check for Updates");
+			AppendMenu(popup, MF_STRING | (Settings::UnlockClient ? MF_CHECKED : 0), RFU_TRAYMENU_CLIENT,
+			           L"Unlock Client");
+			AppendMenu(popup, MF_STRING | (Settings::UnlockStudio ? MF_CHECKED : 0), RFU_TRAYMENU_STUDIO,
+			           L"Unlock Studio");
+			AppendMenu(popup, MF_STRING | (Settings::CheckForUpdates ? MF_CHECKED : 0), RFU_TRAYMENU_CFU,
+			           L"Check for Updates");
 
-			auto submenu = CreatePopupMenu();
+			auto* submenu = CreatePopupMenu();
 			AppendMenu(submenu, MF_STRING, RFU_FCS_NONE, L"None");
 			AppendMenu(submenu, MF_STRING, RFU_FCS_30, L"30");
 			AppendMenu(submenu, MF_STRING, RFU_FCS_60, L"60");
@@ -79,13 +82,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AppendMenu(submenu, MF_STRING, RFU_FCS_120, L"120");
 			AppendMenu(submenu, MF_STRING, RFU_FCS_144, L"144");
 			AppendMenu(submenu, MF_STRING, RFU_FCS_240, L"240");
-			CheckMenuRadioItem(submenu, RFU_FCS_FIRST, RFU_FCS_LAST, RFU_FCS_FIRST + Settings::FPSCapSelection, MF_BYCOMMAND);
-			AppendMenu(popup, MF_POPUP, UINT_PTR(submenu), L"FPS Cap");
+			CheckMenuRadioItem(submenu, RFU_FCS_FIRST, RFU_FCS_LAST, RFU_FCS_FIRST + Settings::FPSCapSelection,
+			                   MF_BYCOMMAND);
+			AppendMenu(popup, MF_POPUP, reinterpret_cast<UINT_PTR>(submenu), L"FPS Cap");
 
-			auto advanced = CreatePopupMenu();
-			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_SE, L"Silent Errors");
-			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (Settings::NonBlockingErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_NBE, L"Use Console Errors");
-			AppendMenu(popup, MF_POPUP, UINT_PTR(advanced), L"Advanced");
+			auto* advanced = CreatePopupMenu();
+			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_SE,
+			           L"Silent Errors");
+			AppendMenu(advanced,
+			           MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (
+				           Settings::NonBlockingErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_NBE, L"Use Console Errors");
+			AppendMenu(popup, MF_POPUP, reinterpret_cast<UINT_PTR>(advanced), L"Advanced");
 
 			AppendMenu(popup, MF_SEPARATOR, 0, nullptr);
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_LOADSET, L"Load Settings");
@@ -95,15 +102,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_EXIT, L"Exit");
 
 			SetForegroundWindow(hwnd); // to allow "clicking away"
-			const auto result = TrackPopupMenu(popup, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN, position.x, position.y, 0, hwnd, nullptr);
-
+			const auto result = TrackPopupMenu(popup, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN, position.x, // NOLINT(misc-redundant-expression)
+			                                   position.y, 0, hwnd, nullptr);                                   // clarity
+			
 			if (result != 0)
 			{
 				switch (result)
 				{
 				case RFU_TRAYMENU_EXIT:
 					Shell_NotifyIcon(NIM_DELETE, &NotifyIconData);
+					#pragma warning( push )
+					#pragma warning( disable : 6258 ) // app quits anyway, why do we care about improper thread termination?
 					TerminateThread(WatchThread, 0);
+					#pragma warning( pop )
 					FreeConsole();
 					PostQuitMessage(0);
 					break;
@@ -157,7 +168,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						&& result <= RFU_FCS_LAST)
 					{
 						static double fcs_map[] = { 0.0, 30.0, 60.0, 75.0, 120.0, 144.0, 240.0 };
-						Settings::FPSCapSelection = result - RFU_FCS_FIRST;
+						Settings::FPSCapSelection = result - RFU_FCS_FIRST;  // NOLINT(clang-diagnostic-implicit-int-conversion)
 						Settings::FPSCap = fcs_map[Settings::FPSCapSelection];
 					}
 				}
@@ -175,10 +186,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			return 1;
 		}
-
-		break;
-	}
-	default:
+	} else
+	{
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
 
@@ -209,7 +218,7 @@ void UI::CreateHiddenConsole()
 
 	if (!IsConsoleOnly)
 	{
-		const auto menu = GetSystemMenu(GetConsoleWindow(), FALSE);
+		auto* const menu = GetSystemMenu(GetConsoleWindow(), FALSE);
 		EnableMenuItem(menu, SC_CLOSE, MF_GRAYED);
 	}
 
@@ -279,7 +288,7 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 		}
 	}
 
-	return msg.wParam;
+	return msg.wParam;  // NOLINT(clang-diagnostic-shorten-64-to-32)
 }
 
 
@@ -311,7 +320,7 @@ bool UI::IsAppDarkMode()
 	return v == 0;
 }
 
-HICON UI::GetIcon(const HINSTANCE instance, const bool dark)
+HICON UI::GetIcon(HINSTANCE instance, const bool dark)
 {
 	if (dark)
 		return LoadIcon(instance, MAKEINTRESOURCE(ICON_LIGHT));

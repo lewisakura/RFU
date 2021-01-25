@@ -10,9 +10,11 @@
 
 bool HttpRequest(const char *url, std::string &response)
 {
-	if (const auto internet = InternetOpenA("LewisTehMinerz/RFU", INTERNET_OPEN_TYPE_PRECONFIG, nullptr, nullptr, NULL))
+	if (auto* const internet = InternetOpenA("LewisTehMinerz/RFU", INTERNET_OPEN_TYPE_PRECONFIG,
+	                                         nullptr, nullptr, NULL))
 	{
-		if (const auto request = InternetOpenUrlA(internet, url, nullptr, 0, INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
+		if (auto* const request = InternetOpenUrlA(internet, url, nullptr, 0,
+		                                           INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
 		{
 			char buffer[1024];
 			DWORD bytes_read;
@@ -64,7 +66,8 @@ bool CheckForUpdates()
 
 		if (MessageBoxA(nullptr, buffer, "Update Check", MB_YESNOCANCEL | MB_ICONEXCLAMATION) == IDYES)
 		{
-			ShellExecuteA(nullptr, "open", "https://github.com/" RFU_GITHUB_REPO "/releases", nullptr, nullptr, SW_SHOWNORMAL);
+			ShellExecuteA(nullptr, "open", "https://github.com/" RFU_GITHUB_REPO "/releases", nullptr, nullptr,
+			              SW_SHOWNORMAL);
 			return true;
 		}
 	}

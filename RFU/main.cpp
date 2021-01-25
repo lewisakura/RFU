@@ -21,10 +21,10 @@ std::vector<HANDLE> GetRobloxProcesses(bool include_client = true, bool include_
 	std::vector<HANDLE> result;
 	if (include_client)
 	{
-		for (auto handle : ProcUtil::GetProcessesByImageName(L"RobloxPlayerBeta.exe")) result.emplace_back(handle);
-		for (auto handle : ProcUtil::GetProcessesByImageName(L"Windows10Universal.exe")) result.emplace_back(handle);
+		for (auto* handle : ProcUtil::GetProcessesByImageName(L"RobloxPlayerBeta.exe")) result.emplace_back(handle);
+		for (auto* handle : ProcUtil::GetProcessesByImageName(L"Windows10Universal.exe")) result.emplace_back(handle);
 	}
-	if (include_studio) for (auto handle : ProcUtil::GetProcessesByImageName(L"RobloxStudioBeta.exe")) result.emplace_back(handle);
+	if (include_studio) for (auto* handle : ProcUtil::GetProcessesByImageName(L"RobloxStudioBeta.exe")) result.emplace_back(handle);
 	return result;
 }
 
@@ -35,11 +35,15 @@ HANDLE GetRobloxProcess()
 	if (processes.empty())
 		return nullptr;
 
-	if (processes.size() == 1)
+	if (processes.size() == 1) {
+		#pragma warning( push )
+		#pragma warning( disable : 26816 ) // no way around this warning
 		return processes[0];
+		#pragma warning( pop )
+	}
 
 	printf("Multiple processes found! Select a process to inject into (%u - %zu):\n", 1, processes.size());
-	for (auto i = 0; i < processes.size(); i++)
+	for (auto i = 0; i < processes.size(); i++)  // NOLINT(clang-diagnostic-sign-compare)
 	{
 		try
 		{
@@ -64,10 +68,10 @@ HANDLE GetRobloxProcess()
 			std::cin.clear();
 			std::cin.ignore(std::cin.rdbuf()->in_avail());
 			printf("Invalid input, try again\n");
-			continue;
+			continue;  
 		}
 
-		if (selection < 1 || selection > processes.size())
+		if (selection < 1 || selection > processes.size()) // NOLINT(clang-diagnostic-sign-compare)
 		{
 			printf("Please enter a number between %u and %zu\n", 1, processes.size());
 			continue;
@@ -89,7 +93,7 @@ size_t FindTaskSchedulerFrameDelayOffset(HANDLE process, const void *scheduler)
 
 	/* Find the frame delay variable inside TaskScheduler (ugly, but it should survive updates unless the variable is removed or shifted)
 	   (variable was at +0x150 (32-bit) and +0x180 (studio 64-bit) as of 2/13/2020) */
-	for (auto i = 0; i < sizeof buffer - sizeof(double); i += 4)
+	for (auto i = 0; i < sizeof buffer - sizeof(double); i += 4)  // NOLINT(clang-diagnostic-sign-compare)
 	{
 		static const auto frame_delay = 1.0 / 60.0;
 		auto difference = *reinterpret_cast<double*>(buffer + i) - frame_delay;
@@ -130,29 +134,34 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 			}
 		}
 
-		const auto start = static_cast<const uint8_t*>(info.hmodule.base);
-		const auto end = start + info.hmodule.size;
+		const auto* const start = static_cast<const uint8_t*>(info.hmodule.base);
+		const auto* const end = start + info.hmodule.size;
 
-		printf("[%p] Process Base: %p\n", process, start);
+		printf("[%p] Process Base: %p\n", process, start);  // NOLINT(clang-diagnostic-format-pedantic)
+		                                                          // (keeps telling me to change %p -> %s and vice versa)
 
 		if (ProcUtil::IsProcess64Bit(process))
 		{
 			printf("[%p] Is 64bit\n", process);
 			// 40 53 48 83 EC 20 0F B6 D9 E8 ?? ?? ?? ?? 86 58 04 48 83 C4 20 5B C3
-			if (const auto result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
+			if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
 				process, "\x40\x53\x48\x83\xEC\x20\x0F\xB6\xD9\xE8\x00\x00\x00\x00\x86\x58\x04\x48\x83\xC4\x20\x5B\xC3",
 				"xxxxxxxxxx????xxxxxxxxx", start, end)))
 			{
-				const auto gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
+				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
-				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn);
+				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
+		                                                                      // (keeps telling me to change %p -> %s and vice versa)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
 				{
-					if (const auto inst = sigscan::scan("\x48\x8B\x05\x00\x00\x00\x00\x48\x83\xC4\x38", "xxx????xxxx", (uintptr_t)buffer, (uintptr_t)buffer + 0x100)) // mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
+					if (auto* const inst = sigscan::scan("\x48\x8B\x05\x00\x00\x00\x00\x48\x83\xC4\x38", "xxx????xxxx",
+					                                     reinterpret_cast<uintptr_t>(buffer),
+					                                     reinterpret_cast<uintptr_t>(buffer) + 0x100))
+						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
 					{
-						const auto remote = gts_fn + (inst - buffer);
+						const auto* const remote = gts_fn + (inst - buffer);
 						return remote + 7 + *reinterpret_cast<int32_t*>(inst + 3);
 					}
 				}
@@ -161,18 +170,22 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 		else
 		{
 			printf("[%p] Is 32bit\n", process);
-			if (const auto result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
+			if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
 				process, "\x55\x8B\xEC\xE8\x00\x00\x00\x00\x8A\x4D\x08\x83\xC0\x04\x86\x08\x5D\xC3", "xxxx????xxxxxxxxxx",
 				start, end)))
 			{
-				const auto gts_fn = result + 8 + ProcUtil::Read<int32_t>(process, result + 4);
+				const auto* const gts_fn = result + 8 + ProcUtil::Read<int32_t>(process, result + 4);
 
-				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn);
+				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
+		                                                                      // (keeps telling me to change %p -> %s and vice versa)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
 				{
-					if (const auto inst = sigscan::scan("\xA1\x00\x00\x00\x00\x8B\x4D\xF4", "x????xxx", (uintptr_t)buffer, (uintptr_t)buffer + 0x100)) // mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
+					if (auto* const inst = sigscan::scan("\xA1\x00\x00\x00\x00\x8B\x4D\xF4", "x????xxx",
+					                                    reinterpret_cast<uintptr_t>(buffer),
+					                                    reinterpret_cast<uintptr_t>(buffer) + 0x100))
+						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
 					{
 						//printf("[%p] Inst: %p\n", process, gts_fn + (inst - buffer));
 						return reinterpret_cast<const void*>(*reinterpret_cast<uint32_t*>(inst + 1));
@@ -183,7 +196,7 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 	}
 	catch ([[maybe_unused]] ProcUtil::WindowsException& e)
 	{
-		printf("[%p] WindowsException occurred, GetLastError() = %d\n", process, GetLastError());
+		printf("[%p] WindowsException occurred, GetLastError() = %lu\n", process, GetLastError());
 	}
 
 	return nullptr;
@@ -194,11 +207,11 @@ void NotifyError(const char* title, const char* error)
 	if (Settings::SilentErrors || Settings::NonBlockingErrors)
 	{
 		// lol
-		const auto console = GetStdHandle(STD_OUTPUT_HANDLE);
+		auto* const console = GetStdHandle(STD_OUTPUT_HANDLE);
 		CONSOLE_SCREEN_BUFFER_INFO info{};
 		GetConsoleScreenBufferInfo(console, &info);
 
-		const WORD color = info.wAttributes & 0xFF00 | (FOREGROUND_RED | FOREGROUND_INTENSITY);
+		const WORD color = info.wAttributes & (0xFF00 | (FOREGROUND_RED | FOREGROUND_INTENSITY));
 		SetConsoleTextAttribute(console, color);
 
 		printf("[ERROR] %s\n", error);
@@ -256,12 +269,13 @@ struct RobloxProcess
 		{
 			try
 			{
-				if (const auto scheduler = static_cast<const uint8_t*>(ProcUtil::ReadPointer(handle, ts_ptr)))
+				if (const auto* const scheduler = static_cast<const uint8_t*>(ProcUtil::ReadPointer(handle, ts_ptr)))
 				{
-					printf("[%p] Scheduler: %p\n", handle, scheduler);
+					printf("[%p] Scheduler: %p\n", handle, scheduler); // NOLINT(clang-diagnostic-format-pedantic)
+		                                                                     // (keeps telling me to change %p -> %s and vice versa)
 
 					const auto delay_offset = FindTaskSchedulerFrameDelayOffset(handle, scheduler);
-					if (delay_offset == -1)
+					if (delay_offset == -1)  // NOLINT(clang-diagnostic-sign-compare)
 					{
 						if (retries_left-- <= 0)
 							NotifyError("RFU Error", "Variable scan failed! This is probably due to a Roblox update -- watch the github for any patches or a fix.");
@@ -284,7 +298,7 @@ struct RobloxProcess
 		}
 	}
 
-	void SetFPSCap(double cap)
+	void SetFPSCap(double cap) const
 	{
 		if (fd_ptr)
 		{
@@ -303,11 +317,11 @@ struct RobloxProcess
 	}
 };
 
-std::unordered_map<DWORD, RobloxProcess> AttachedProcesses;
+std::unordered_map<DWORD, RobloxProcess> attached_processes;  // NOLINT(clang-diagnostic-exit-time-destructors)
 
 void SetFPSCapExternal(const double value)
 {
-	for (auto& it : AttachedProcesses)
+	for (auto& it : attached_processes)
 	{
 		it.second.SetFPSCap(value);
 	}
@@ -331,7 +345,7 @@ void SetRunOnStartup(bool shouldRun)
 	RegOpenKeyA(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Run)", &hK);
 	if (shouldRun)
 	{
-		const auto ourModule = GetModuleHandle(nullptr);
+		auto* const ourModule = GetModuleHandle(nullptr);
 		char path[MAX_PATH];
 
 		GetModuleFileNameA(ourModule, path, sizeof path);
@@ -341,7 +355,7 @@ void SetRunOnStartup(bool shouldRun)
 		char corrected[sizeof path + 2 + 1 + 7 + 1];
 		sprintf_s(corrected, "\"%s\" --silent\0", path);
 		
-		RegSetValueExA(hK, RFU_REGKEY, 0, REG_SZ, reinterpret_cast<BYTE*>(corrected), filePathSize);
+		RegSetValueExA(hK, RFU_REGKEY, 0, REG_SZ, reinterpret_cast<BYTE*>(corrected), filePathSize);  // NOLINT(clang-diagnostic-shorten-64-to-32)
 		RegCloseKey(hK);
 	} else
 	{
@@ -369,16 +383,16 @@ DWORD WINAPI WatchThread(LPVOID)
 		{
 			auto id = GetProcessId(process);
 
-			if (AttachedProcesses.find(id) == AttachedProcesses.end())
+			if (attached_processes.find(id) == attached_processes.end())
 			{
 				printf("Injecting into new process %p (pid %lu)\n", process, id);
 				RobloxProcess roblox_process;
 
 				roblox_process.Attach(process, 2);
 
-				AttachedProcesses[id] = roblox_process;
+				attached_processes[id] = roblox_process;
 
-				printf("New size: %zu\n", AttachedProcesses.size());
+				printf("New size: %zu\n", attached_processes.size());
 			}
 			else
 			{
@@ -386,9 +400,9 @@ DWORD WINAPI WatchThread(LPVOID)
 			}
 		}
 
-		for (auto it = AttachedProcesses.begin(); it != AttachedProcesses.end();)
+		for (auto it = attached_processes.begin(); it != attached_processes.end();)
 		{
-			const auto process = it->second.handle;
+			auto* const process = it->second.handle;
 
 			DWORD code;
 			GetExitCodeProcess(process, &code);
@@ -396,9 +410,9 @@ DWORD WINAPI WatchThread(LPVOID)
 			if (code != STILL_ACTIVE)
 			{
 				printf("Purging dead process %p (pid %lu) (code %lX)\n", process, GetProcessId(process), code);
-				it = AttachedProcesses.erase(it);
+				it = attached_processes.erase(it);
 				CloseHandle(process);
-				printf("New size: %zu\n", AttachedProcesses.size());
+				printf("New size: %zu\n", attached_processes.size());
 			}
 			else
 			{
@@ -407,7 +421,7 @@ DWORD WINAPI WatchThread(LPVOID)
 			}
 		}
 
-		UI::AttachedProcessesCount = AttachedProcesses.size();
+		UI::AttachedProcessesCount = attached_processes.size();  // NOLINT(clang-diagnostic-shorten-64-to-32)
 
 		Sleep(2000);
 	}
@@ -445,7 +459,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		printf("Waiting for Roblox...\n");
 
-		HANDLE process = nullptr;
+		HANDLE process;
 
 		do
 		{
