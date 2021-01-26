@@ -6,9 +6,9 @@
 </p>
 
 ## Why RFU rather than the *actual* Roblox FPS Unlocker?
-**__R__**oblox **__F__**PS **__U__**nlocker (RFU) is a fork of the original [Roblox FPS Unlocker](https://github.com/axstin/rbxfpsunlocker). It
-removes the dependency on Blackbone (which wasn't even used in most builds of it), modernizes the code, and also removes dead code. This makes
-it slightly faster, smaller, and makes it compilable on newer versions of the C++ compiler. With the removal of Blackbone, antivirus false
+**R**oblox **F**PS **U**nlocker (RFU) is a fork of the original [Roblox FPS Unlocker](https://github.com/axstin/rbxfpsunlocker). It removes
+the dependency on Blackbone (which wasn't even used in most builds of it), modernizes the code, and also removes dead code. This makes it
+slightly faster, smaller, and makes it compilable on newer versions of the C++ compiler. With the removal of Blackbone, antivirus false
 positives should be less common than they were before.
 
 # FAQ
