@@ -21,10 +21,11 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+If applicable, add screenshots to help explain your problem. Please join the
+[testing game](https://www.roblox.com/games/5885482504/FPS-Unlocker-Check) and take a screenshot as well to gather FPS information.
 
 **Desktop (please complete the following information):**
- - Version [e.g. 22]
+ - Version [e.g. 5.3.1]
 
 **Additional context**
 Add any other context about the problem here.
