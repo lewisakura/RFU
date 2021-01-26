@@ -8,7 +8,7 @@
 **R**oblox **F**PS **U**nlocker (RFU) is a utility to remove the mandatory FPS cap put on by Roblox.
 
 ## Why RFU rather than the *actual* Roblox FPS Unlocker?
-RFU is a rewrite of the original Roblox FPS Unlocker. It removes the dependency on Blackbone (which wasn't even used in most builds of it),
+RFU is a fork of the original Roblox FPS Unlocker. It removes the dependency on Blackbone (which wasn't even used in most builds of it),
 modernizes the code, and also removes dead code. This makes it slightly faster, smaller, and makes it compilable on newer versions of the
 C++ compiler. With the removal of Blackbone, antivirus false positives should be less common than they were before.
 
