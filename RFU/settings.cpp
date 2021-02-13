@@ -81,6 +81,7 @@ namespace Settings
 
 		printf("Saving settings to file...\n");
 
+		file << "UnlockClient=" << std::to_string(UnlockClient) << std::endl;
 		file << "UnlockStudio=" << std::to_string(UnlockStudio) << std::endl;
 
 		file << "FPSCapSelection=" << std::to_string(FPSCapSelection) << std::endl;

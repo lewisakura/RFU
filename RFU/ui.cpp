@@ -134,7 +134,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				case RFU_TRAYMENU_CLIENT:
 					Settings::UnlockClient = !Settings::UnlockClient;
-					CheckMenuItem(popup, RFU_TRAYMENU_STUDIO, Settings::UnlockClient ? MF_CHECKED : MF_UNCHECKED);
+					CheckMenuItem(popup, RFU_TRAYMENU_CLIENT, Settings::UnlockClient ? MF_CHECKED : MF_UNCHECKED);
 					break;
 					
 				case RFU_TRAYMENU_STUDIO:
