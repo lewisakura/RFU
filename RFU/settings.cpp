@@ -5,7 +5,6 @@
 #include <fstream>
 #include <vector>
 
-
 #include "rfu.h"
 
 FileMapping ipc;  // NOLINT(clang-diagnostic-exit-time-destructors)
@@ -150,7 +149,7 @@ namespace Settings
 		FPSCap = FPSCapSelection == 0 ? 0.0 : FPSCapValues[FPSCapSelection - 1];
 
 		Update();
-		
+
 		return true;
 	}
 

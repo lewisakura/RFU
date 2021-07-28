@@ -26,7 +26,8 @@ std::vector<HANDLE> ProcUtil::GetProcessesByImageName(LPCWSTR image_name, size_t
 				{
 					result.push_back(process);
 					count++;
-				} else
+				}
+				else
 				{
 					printf("OpenProcess failed, maybe try running as administrator? GetLastError() = %lu\n", GetLastError());
 				}
@@ -70,7 +71,7 @@ ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE hmodule)
 	{
 		/*
 			GetModuleInformation works with hModule set to NULL with the caveat that lpBaseOfDll will be NULL aswell: https://doxygen.reactos.org/de/d86/dll_2win32_2psapi_2psapi_8c_source.html#l01102
-			Solutions: 
+			Solutions:
 				1) Enumerate modules in the process and compare file names
 				2) Use NtQueryInformationProcess with ProcessBasicInformation to find the base address (as done here: https://doxygen.reactos.org/de/d86/dll_2win32_2psapi_2psapi_8c_source.html#l00142)
 		*/
@@ -79,9 +80,9 @@ ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE hmodule)
 		char buffer[MAX_PATH];
 		DWORD size = sizeof buffer;
 
-		if (!QueryFullProcessImageNameA(process, 0, buffer, &size)) // Requires at least PROCESS_QUERY_LIMITED_INFORMATION 
+		if (!QueryFullProcessImageNameA(process, 0, buffer, &size)) // Requires at least PROCESS_QUERY_LIMITED_INFORMATION
 			throw WindowsException("unable to query process image name");
-		
+
 		bool found;
 
 		printf("ProcUtil::GetModuleInfo: buffer = %s\n", buffer);
@@ -107,11 +108,11 @@ ProcUtil::ModuleInfo ProcUtil::GetModuleInfo(HANDLE process, HMODULE hmodule)
 	else
 	{
 		char buffer[MAX_PATH];
-		if (!GetModuleFileNameExA(process, hmodule, buffer, sizeof buffer)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
+		if (!GetModuleFileNameExA(process, hmodule, buffer, sizeof buffer)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
 			throw WindowsException("unable to get module file name");
 
 		MODULEINFO mi;
-		if (!GetModuleInformation(process, hmodule, &mi, sizeof mi)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ 
+		if (!GetModuleInformation(process, hmodule, &mi, sizeof mi)) // Requires PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
 			throw WindowsException("unable to get module information");
 
 		result.path = buffer;
@@ -150,7 +151,7 @@ bool ProcUtil::FindModuleInfo(HANDLE process, const std::filesystem::path& path,
 	return false;
 }
 
-void *ScanRegion(HANDLE process, const char *aob, const char *mask, const uint8_t *base, size_t size)
+void* ScanRegion(HANDLE process, const char* aob, const char* mask, const uint8_t* base, size_t size)
 {
 	std::vector<uint8_t> buffer;
 	buffer.resize(READ_LIMIT);
@@ -164,12 +165,12 @@ void *ScanRegion(HANDLE process, const char *aob, const char *mask, const uint8_
 		if (ReadProcessMemory(process, base, buffer.data(), size < buffer.size() ? size : buffer.size(), reinterpret_cast<SIZE_T*>(&bytes_read)) && bytes_read >= aob_len)
 		{
 			if (auto* const result = sigscan::scan(aob, mask, reinterpret_cast<uintptr_t>(buffer.data()),
-			                                       reinterpret_cast<uintptr_t>(buffer.data()) + bytes_read))
+				reinterpret_cast<uintptr_t>(buffer.data()) + bytes_read))
 			{
 				return const_cast<uint8_t*>(base) + (result - buffer.data());
 			}
 		}
-	   
+
 		if (bytes_read > aob_len) bytes_read -= aob_len;
 
 		size -= bytes_read;
@@ -179,8 +180,7 @@ void *ScanRegion(HANDLE process, const char *aob, const char *mask, const uint8_
 	return nullptr;
 }
 
-
-void *ProcUtil::ScanProcess(HANDLE process, const char *aob, const char *mask, const uint8_t *start, const uint8_t *end)
+void* ProcUtil::ScanProcess(HANDLE process, const char* aob, const char* mask, const uint8_t* start, const uint8_t* end)
 {
 	const auto* i = start;
 
@@ -197,7 +197,7 @@ void *ProcUtil::ScanProcess(HANDLE process, const char *aob, const char *mask, c
 
 		if (mbi.State & MEM_COMMIT && mbi.Protect & PAGE_READABLE && !(mbi.Protect & PAGE_GUARD))
 		{
-			if (auto *result = ScanRegion(process, aob, mask, i, size))
+			if (auto* result = ScanRegion(process, aob, mask, i, size))
 			{
 				return result;
 			}

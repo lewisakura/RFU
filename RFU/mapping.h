@@ -9,7 +9,7 @@ class FileMapping  // NOLINT(cppcoreguidelines-special-member-functions)
 	LPVOID view = nullptr;
 
 public:
-	LPVOID Open(const char *file_name, const char *map_name, size_t size = 1024)
+	LPVOID Open(const char* file_name, const char* map_name, size_t size = 1024)
 	{
 		if (view)
 			return nullptr;
@@ -33,11 +33,11 @@ public:
 			Close();
 			return nullptr;
 		}
-		
+
 		return view;
 	}
 
-	LPVOID Open(const char *map_name, size_t size = 1024)
+	LPVOID Open(const char* map_name, size_t size = 1024)
 	{
 		if (view)
 			return nullptr;

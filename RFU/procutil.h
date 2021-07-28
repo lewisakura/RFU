@@ -18,7 +18,7 @@ namespace ProcUtil
 	class WindowsException : public std::runtime_error
 	{
 	public:
-		WindowsException(const char *message)
+		WindowsException(const char* message)
 			: std::runtime_error(init(message)), last_error(0)
 		{
 		}
@@ -29,7 +29,7 @@ namespace ProcUtil
 		}
 
 	private:
-		const char *init(const char *message)
+		const char* init(const char* message)
 		{
 			last_error = ::GetLastError();
 			return message;
@@ -48,19 +48,19 @@ namespace ProcUtil
 	ModuleInfo GetModuleInfo(HANDLE process, HMODULE hmodule);
 	bool FindModuleInfo(HANDLE process, const std::filesystem::path& path, ModuleInfo& out);
 	void* ScanProcess(HANDLE process, const char* aob, const char* mask, const uint8_t* start = nullptr,
-	                  const uint8_t* end = reinterpret_cast<const uint8_t*>(UINTPTR_MAX));
-	
+		const uint8_t* end = reinterpret_cast<const uint8_t*>(UINTPTR_MAX));
+
 	bool IsOS64Bit();
 	bool IsProcess64Bit(HANDLE process);
-	
+
 	template <typename T>
-	bool Read(HANDLE process, const void *location, T *buffer, size_t size = 1) noexcept
+	bool Read(HANDLE process, const void* location, T* buffer, size_t size = 1) noexcept
 	{
 		return ReadProcessMemory(process, location, buffer, size * sizeof(T), nullptr) != 0;
 	}
 
 	template <typename T>
-	T Read(HANDLE process, const void *location)
+	T Read(HANDLE process, const void* location)
 	{
 		T value;
 		if (!ReadProcessMemory(process, location, static_cast<LPVOID>(&value), sizeof(T), nullptr)) throw
@@ -68,36 +68,36 @@ namespace ProcUtil
 		return value;
 	}
 
-	inline const void *ReadPointer(HANDLE process, const void *location)
+	inline const void* ReadPointer(HANDLE process, const void* location)
 	{
 #ifdef _WIN64
 		return IsProcess64Bit(process)
-			       ? reinterpret_cast<const void*>(Read<uint64_t>(process, location))
-			       : reinterpret_cast<const void*>(Read<uint32_t>(process, location));
+			? reinterpret_cast<const void*>(Read<uint64_t>(process, location))
+			: reinterpret_cast<const void*>(Read<uint32_t>(process, location));
 #else
-		return Read<const void *>(process, location);
+		return Read<const void*>(process, location);
 #endif
 	}
 
 	template <typename T>
-	void Write(HANDLE process, const void *location, const T& value)
+	void Write(HANDLE process, const void* location, const T& value)
 	{
 		if (!WriteProcessMemory(process, const_cast<LPVOID>(location), static_cast<LPCVOID>(&value), sizeof(T), nullptr))
 			throw WindowsException("unable to write process memory");
 	}
 
 	template <size_t N, typename T>
-	bool ExecuteStub(HANDLE process, const uint8_t (&code)[N], T& arg)
+	bool ExecuteStub(HANDLE process, const uint8_t(&code)[N], T& arg)
 	{
 		if (auto alloc = static_cast<const uint8_t*>(VirtualAllocEx(process, nullptr, sizeof(T) + sizeof(code), MEM_COMMIT,
-		                                                            PAGE_EXECUTE_READWRITE)))
+			PAGE_EXECUTE_READWRITE)))
 		{
 			Write(process, alloc, arg);
 			Write(process, alloc + sizeof(T), code);
 
 			if (const auto thread = CreateRemoteThread(process, nullptr, 0,
-			                                           LPTHREAD_START_ROUTINE(alloc + sizeof(T)),
-			                                           LPVOID(alloc), NULL, nullptr))
+				LPTHREAD_START_ROUTINE(alloc + sizeof(T)),
+				LPVOID(alloc), NULL, nullptr))
 			{
 				WaitForSingleObject(thread, INFINITE);
 				arg = Read<T>(process, alloc);
@@ -105,16 +105,16 @@ namespace ProcUtil
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
 	struct ModuleInfo
 	{
 		std::filesystem::path path;
-		void *base = nullptr;
+		void* base = nullptr;
 		size_t size = 0;
-		void *entry_point = nullptr;
+		void* entry_point = nullptr;
 
 		[[nodiscard]] HMODULE GetHandle() const
 		{
@@ -138,24 +138,24 @@ namespace ProcUtil
 			window = nullptr;
 
 			EnumWindows([](HWND window, LPARAM param) -> BOOL  // NOLINT(clang-diagnostic-shadow)
-			{
-				auto* info = reinterpret_cast<ProcessInfo*>(param);
-
-				DWORD process_id;
-				GetWindowThreadProcessId(window, &process_id);
-
-				if (IsWindowVisible(window) && process_id == info->id)
 				{
-					char title[256] = { 0 };
-					GetWindowTextA(window, title, sizeof title);
+					auto* info = reinterpret_cast<ProcessInfo*>(param);
 
-					info->window = window;
-					info->window_title = title;
-					return FALSE;
-				}
+					DWORD process_id;
+					GetWindowThreadProcessId(window, &process_id);
 
-				return TRUE;
-			}, reinterpret_cast<LPARAM>(this));
+					if (IsWindowVisible(window) && process_id == info->id)
+					{
+						char title[256] = { 0 };
+						GetWindowTextA(window, title, sizeof title);
+
+						info->window = window;
+						info->window_title = title;
+						return FALSE;
+					}
+
+					return TRUE;
+				}, reinterpret_cast<LPARAM>(this));
 
 			return window != nullptr;
 		}
@@ -171,7 +171,7 @@ namespace ProcUtil
 			printf("[%p] Got ModuleInfo\n", handle);
 			name = hmodule.path.filename().string();
 			printf("[%p] Got module name\n", handle);
-			
+
 			if (find_window)
 				FindMainWindow();
 		}

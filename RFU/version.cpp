@@ -8,13 +8,13 @@
 #include <string>
 #include <regex>
 
-bool HttpRequest(const char *url, std::string &response)
+bool HttpRequest(const char* url, std::string& response)
 {
 	if (auto* const internet = InternetOpenA("LewisTehMinerz/RFU", INTERNET_OPEN_TYPE_PRECONFIG,
-	                                         nullptr, nullptr, NULL))
+		nullptr, nullptr, NULL))
 	{
 		if (auto* const request = InternetOpenUrlA(internet, url, nullptr, 0,
-		                                           INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
+			INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
 		{
 			char buffer[1024];
 			DWORD bytes_read;
@@ -60,14 +60,14 @@ bool CheckForUpdates()
 	{
 		char buffer[256];
 		sprintf_s(buffer,
-		          "A new version of RFU is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?",
-		          // ReSharper disable once CppPrintfExtraArg
-		          RFU_VERSION, latest_version.c_str());
+			"A new version of RFU is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?",
+			// ReSharper disable once CppPrintfExtraArg
+			RFU_VERSION, latest_version.c_str());
 
 		if (MessageBoxA(nullptr, buffer, "Update Check", MB_YESNOCANCEL | MB_ICONEXCLAMATION) == IDYES)
 		{
 			ShellExecuteA(nullptr, "open", "https://github.com/" RFU_GITHUB_REPO "/releases", nullptr, nullptr,
-			              SW_SHOWNORMAL);
+				SW_SHOWNORMAL);
 			return true;
 		}
 	}

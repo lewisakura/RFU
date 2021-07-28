@@ -36,10 +36,10 @@ HANDLE GetRobloxProcess()
 		return nullptr;
 
 	if (processes.size() == 1) {
-		#pragma warning( push )
-		#pragma warning( disable : 26816 ) // no way around this warning
+#pragma warning( push )
+#pragma warning( disable : 26816 ) // no way around this warning
 		return processes[0];
-		#pragma warning( pop )
+#pragma warning( pop )
 	}
 
 	printf("Multiple processes found! Select a process to inject into (%u - %zu):\n", 1, processes.size());
@@ -68,7 +68,7 @@ HANDLE GetRobloxProcess()
 			std::cin.clear();
 			std::cin.ignore(std::cin.rdbuf()->in_avail());
 			printf("Invalid input, try again\n");
-			continue;  
+			continue;
 		}
 
 		if (selection < 1 || selection > processes.size()) // NOLINT(clang-diagnostic-sign-compare)
@@ -83,7 +83,7 @@ HANDLE GetRobloxProcess()
 	return processes[selection - 1];
 }
 
-size_t FindTaskSchedulerFrameDelayOffset(HANDLE process, const void *scheduler)
+size_t FindTaskSchedulerFrameDelayOffset(HANDLE process, const void* scheduler)
 {
 	const size_t search_offset = 0x100; // ProcUtil::IsProcess64Bit(process) ? 0x200 : 0x100;
 
@@ -104,7 +104,7 @@ size_t FindTaskSchedulerFrameDelayOffset(HANDLE process, const void *scheduler)
 	return -1;
 }
 
-const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
+const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 {
 	try
 	{
@@ -138,7 +138,7 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 		const auto* const end = start + info.hmodule.size;
 
 		printf("[%p] Process Base: %p\n", process, start);  // NOLINT(clang-diagnostic-format-pedantic)
-		                                                          // (keeps telling me to change %p -> %s and vice versa)
+																  // (keeps telling me to change %p -> %s and vice versa)
 
 		if (ProcUtil::IsProcess64Bit(process))
 		{
@@ -151,14 +151,14 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
 				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
-		                                                                      // (keeps telling me to change %p -> %s and vice versa)
+																			  // (keeps telling me to change %p -> %s and vice versa)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
 				{
 					if (auto* const inst = sigscan::scan("\x48\x8B\x05\x00\x00\x00\x00\x48\x83\xC4\x38", "xxx????xxxx",
-					                                     reinterpret_cast<uintptr_t>(buffer),
-					                                     reinterpret_cast<uintptr_t>(buffer) + 0x100))
+						reinterpret_cast<uintptr_t>(buffer),
+						reinterpret_cast<uintptr_t>(buffer) + 0x100))
 						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
 					{
 						const auto* const remote = gts_fn + (inst - buffer);
@@ -177,14 +177,14 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
 				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
-		                                                                      // (keeps telling me to change %p -> %s and vice versa)
+																			  // (keeps telling me to change %p -> %s and vice versa)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
 				{
 					if (auto* const inst = sigscan::scan("\xA1\x00\x00\x00\x00\x8B\x4D\xF4", "x????xxx",
-					                                    reinterpret_cast<uintptr_t>(buffer),
-					                                    reinterpret_cast<uintptr_t>(buffer) + 0x100))
+						reinterpret_cast<uintptr_t>(buffer),
+						reinterpret_cast<uintptr_t>(buffer) + 0x100))
 						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
 					{
 						//printf("[%p] Inst: %p\n", process, gts_fn + (inst - buffer));
@@ -232,8 +232,8 @@ void NotifyError(const char* title, const char* error)
 struct RobloxProcess
 {
 	HANDLE handle = nullptr;
-	const void *ts_ptr = nullptr; // task scheduler pointer
-	const void *fd_ptr = nullptr; // frame delay pointer
+	const void* ts_ptr = nullptr; // task scheduler pointer
+	const void* fd_ptr = nullptr; // frame delay pointer
 
 	int retries_left = 0;
 
@@ -272,7 +272,7 @@ struct RobloxProcess
 				if (const auto* const scheduler = static_cast<const uint8_t*>(ProcUtil::ReadPointer(handle, ts_ptr)))
 				{
 					printf("[%p] Scheduler: %p\n", handle, scheduler); // NOLINT(clang-diagnostic-format-pedantic)
-		                                                                     // (keeps telling me to change %p -> %s and vice versa)
+																			 // (keeps telling me to change %p -> %s and vice versa)
 
 					const auto delay_offset = FindTaskSchedulerFrameDelayOffset(handle, scheduler);
 					if (delay_offset == -1)  // NOLINT(clang-diagnostic-sign-compare)
@@ -309,7 +309,7 @@ struct RobloxProcess
 
 				ProcUtil::Write(handle, fd_ptr, frame_delay);
 			}
-			catch (ProcUtil::WindowsException &e)
+			catch (ProcUtil::WindowsException& e)
 			{
 				printf("[%p] RobloxProcess::SetFPSCap failed: %s (%lu)\n", handle, e.what(), e.GetLastError());
 			}
@@ -335,7 +335,7 @@ bool RunsOnStartup()
 	const auto returnVal = result != ERROR_NO_MATCH && result != ERROR_FILE_NOT_FOUND;
 
 	RegCloseKey(hK);
-	
+
 	return returnVal;
 }
 
@@ -354,10 +354,11 @@ void SetRunOnStartup(bool shouldRun)
 		const auto filePathSize = strlen(path) + 2 + 1 + 7 + 1;
 		char corrected[sizeof path + 2 + 1 + 7 + 1];
 		sprintf_s(corrected, "\"%s\" --silent\0", path);
-		
+
 		RegSetValueExA(hK, RFU_REGKEY, 0, REG_SZ, reinterpret_cast<BYTE*>(corrected), filePathSize);  // NOLINT(clang-diagnostic-shorten-64-to-32)
 		RegCloseKey(hK);
-	} else
+	}
+	else
 	{
 		RegDeleteValueA(hK, RFU_REGKEY);
 	}
@@ -465,8 +466,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		{
 			Sleep(100);
 			process = GetRobloxProcess();
-		}
-		while (!process);
+		} 		while (!process);
 
 		printf("Found Roblox...\n");
 		printf("Attaching...\n");
@@ -486,7 +486,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		return 0;
 	}
-	
+
 	if (CheckRunning())
 	{
 		MessageBoxA(nullptr, "RFU is already running", "Error", MB_OK);
@@ -494,7 +494,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	else
 	{
 		UI::CreateHiddenConsole();
-			
+
 		// if we aren't silent, we need to show the console initially for output
 		if (!UI::IsSilent)
 		{
@@ -516,7 +516,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 			UI::ToggleConsole();
 		}
-			
+
 		return UI::Start(hInstance, WatchThread);
 	}
 

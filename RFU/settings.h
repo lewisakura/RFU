@@ -12,7 +12,7 @@ struct SettingsIPC
 	struct
 	{
 		int scan_result;
-		void *scheduler;
+		void* scheduler;
 		int sfd_offset;
 		int present_count;
 	} debug;

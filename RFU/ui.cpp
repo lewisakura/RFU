@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 
-
 #include "resource.h"
 #include "settings.h"
 #include "rfu.h"
@@ -61,11 +60,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AppendMenu(popup, MF_SEPARATOR, 0, nullptr);
 
 			AppendMenu(popup, MF_STRING | (Settings::UnlockClient ? MF_CHECKED : 0), RFU_TRAYMENU_CLIENT,
-			           L"Unlock Client");
+				L"Unlock Client");
 			AppendMenu(popup, MF_STRING | (Settings::UnlockStudio ? MF_CHECKED : 0), RFU_TRAYMENU_STUDIO,
-			           L"Unlock Studio");
+				L"Unlock Studio");
 			AppendMenu(popup, MF_STRING | (Settings::CheckForUpdates ? MF_CHECKED : 0), RFU_TRAYMENU_CFU,
-			           L"Check for Updates");
+				L"Check for Updates");
 
 			auto* submenu = CreatePopupMenu();
 			AppendMenu(submenu, MF_STRING, RFU_FCS_NONE, L"None");
@@ -73,7 +72,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				auto value = Settings::FPSCapValues[i];
 
-				WCHAR name[16] = {0};
+				WCHAR name[16] = { 0 };
 				if (static_cast<int>(value) == value)
 					_snwprintf_s(name, sizeof(name), L"%d", static_cast<int>(value));
 				else
@@ -86,10 +85,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			auto* advanced = CreatePopupMenu();
 			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_SE,
-			           L"Silent Errors");
+				L"Silent Errors");
 			AppendMenu(advanced,
-			           MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (
-				           Settings::NonBlockingErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_NBE, L"Use Console Errors");
+				MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (
+					Settings::NonBlockingErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_NBE, L"Use Console Errors");
 			AppendMenu(popup, MF_POPUP, reinterpret_cast<UINT_PTR>(advanced), L"Advanced");
 
 			AppendMenu(popup, MF_SEPARATOR, 0, nullptr);
@@ -101,18 +100,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			SetForegroundWindow(hwnd); // to allow "clicking away"
 			const auto result = TrackPopupMenu(popup, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN, position.x, // NOLINT(misc-redundant-expression)
-			                                   position.y, 0, hwnd, nullptr);                                   // clarity
-			
+				position.y, 0, hwnd, nullptr);                                   // clarity
+
 			if (result != 0)
 			{
 				switch (result)
 				{
 				case RFU_TRAYMENU_EXIT:
 					Shell_NotifyIcon(NIM_DELETE, &NotifyIconData);
-					#pragma warning( push )
-					#pragma warning( disable : 6258 ) // app quits anyway, why do we care about improper thread termination?
+#pragma warning( push )
+#pragma warning( disable : 6258 ) // app quits anyway, why do we care about improper thread termination?
 					TerminateThread(WatchThread, 0);
-					#pragma warning( pop )
+#pragma warning( pop )
 					FreeConsole();
 					PostQuitMessage(0);
 					break;
@@ -134,7 +133,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					Settings::UnlockClient = !Settings::UnlockClient;
 					CheckMenuItem(popup, RFU_TRAYMENU_CLIENT, Settings::UnlockClient ? MF_CHECKED : MF_UNCHECKED);
 					break;
-					
+
 				case RFU_TRAYMENU_STUDIO:
 					Settings::UnlockStudio = !Settings::UnlockStudio;
 					CheckMenuItem(popup, RFU_TRAYMENU_STUDIO, Settings::UnlockStudio ? MF_CHECKED : MF_UNCHECKED);
@@ -160,7 +159,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					// switch
 					SetRunOnStartup(!RunsOnStartup());
 					break;
-					
+
 				default:
 					if (result >= RFU_FCS_FIRST
 						&& result <= RFU_FCS_FIRST + Settings::FPSCapValues.size())
@@ -183,7 +182,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			return 1;
 		}
-	} else
+	}
+	else
 	{
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
@@ -204,10 +204,10 @@ void UI::CreateHiddenConsole()
 	AllocConsole();
 
 	const auto hIcon = reinterpret_cast<LPARAM>(GetIcon(GetModuleHandle(nullptr), IsAppDarkMode()));
-	
+
 	SendMessage(GetConsoleWindow(), WM_SETICON, ICON_BIG, hIcon);
 	SendMessage(GetConsoleWindow(), WM_SETICON, ICON_SMALL, hIcon);
-	
+
 	FILE* pCout{};
 	FILE* pCin{};
 	freopen_s(&pCout, "CONOUT$", "w", stdout);
@@ -267,7 +267,7 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 	NotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 	NotifyIconData.uCallbackMessage = RFU_TRAYICON;
 	NotifyIconData.hIcon = GetIcon(instance, IsSystemDarkMode());
-	wcscpy_s(NotifyIconData.szTip , L"RFU");
+	wcscpy_s(NotifyIconData.szTip, L"RFU");
 
 	Shell_NotifyIcon(NIM_ADD, &NotifyIconData);
 
@@ -288,7 +288,6 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 	return msg.wParam;  // NOLINT(clang-diagnostic-shorten-64-to-32)
 }
 
-
 bool UI::IsSystemDarkMode()
 {
 	HKEY hK;
@@ -296,7 +295,7 @@ bool UI::IsSystemDarkMode()
 
 	DWORD v = 0;
 	DWORD dataSize = sizeof v;
-	
+
 	RegGetValueA(hK, nullptr, "SystemUseLightTheme", RRF_RT_REG_DWORD, nullptr, &v, &dataSize);
 	RegCloseKey(hK);
 
@@ -321,6 +320,6 @@ HICON UI::GetIcon(HINSTANCE instance, const bool dark)
 {
 	if (dark)
 		return LoadIcon(instance, MAKEINTRESOURCE(ICON_LIGHT));
-	
+
 	return LoadIcon(instance, MAKEINTRESOURCE(ICON_DARK));
 }
