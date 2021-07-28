@@ -29,14 +29,7 @@
 #define RFU_TRAYMENU_CLIENT     (WM_APP + 13)
 
 #define RFU_FCS_FIRST			(WM_APP + 20)
-#define RFU_FCS_NONE			(RFU_FCS_FIRST + 0)
-#define RFU_FCS_30				(RFU_FCS_FIRST + 1)
-#define RFU_FCS_60				(RFU_FCS_FIRST + 2)
-#define RFU_FCS_75				(RFU_FCS_FIRST + 3)
-#define RFU_FCS_120				(RFU_FCS_FIRST + 4)
-#define RFU_FCS_144				(RFU_FCS_FIRST + 5)
-#define RFU_FCS_240				(RFU_FCS_FIRST + 6)
-#define RFU_FCS_LAST			(RFU_FCS_240)
+#define RFU_FCS_NONE            RFU_FCS_FIRST
 // ReSharper enable CppClangTidyCppcoreguidelinesMacroUsage
 
 HWND UI::Window = nullptr;
@@ -75,15 +68,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			           L"Check for Updates");
 
 			auto* submenu = CreatePopupMenu();
-			AppendMenu(submenu, MF_STRING, RFU_FCS_NONE, L"None");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_30, L"30");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_60, L"60");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_75, L"75");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_120, L"120");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_144, L"144");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_240, L"240");
-			CheckMenuRadioItem(submenu, RFU_FCS_FIRST, RFU_FCS_LAST, RFU_FCS_FIRST + Settings::FPSCapSelection,
-			                   MF_BYCOMMAND);
+			for (size_t i = 0; i < Settings::FPSCapValues.size(); i++)
+			{
+				auto value = Settings::FPSCapValues[i];
+
+				WCHAR name[16] = {0};
+				if (static_cast<int>(value) == value)
+					_snwprintf_s(name, sizeof(name), L"%d", static_cast<int>(value));
+				else
+					_snwprintf_s(name, sizeof(name), L"%.2f", value);
+
+				AppendMenu(submenu, MF_STRING, RFU_FCS_NONE + i + 1, name);
+			}
+			CheckMenuRadioItem(submenu, RFU_FCS_FIRST, RFU_FCS_FIRST + Settings::FPSCapValues.size(), RFU_FCS_FIRST + Settings::FPSCapSelection, MF_BYCOMMAND);
 			AppendMenu(popup, MF_POPUP, reinterpret_cast<UINT_PTR>(submenu), L"FPS Cap");
 
 			auto* advanced = CreatePopupMenu();
@@ -165,7 +162,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					
 				default:
 					if (result >= RFU_FCS_FIRST
-						&& result <= RFU_FCS_LAST)
+						&& result <= RFU_FCS_FIRST + Settings::FPSCapValues.size())
 					{
 						static double fcs_map[] = { 0.0, 30.0, 60.0, 75.0, 120.0, 144.0, 240.0 };
 						Settings::FPSCapSelection = result - RFU_FCS_FIRST;  // NOLINT(clang-diagnostic-implicit-int-conversion)

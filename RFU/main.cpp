@@ -171,10 +171,10 @@ const void *FindTaskScheduler(HANDLE process, const char **error = nullptr)
 		{
 			printf("[%p] Is 32bit\n", process);
 			if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
-				process, "\x55\x8B\xEC\xE8\x00\x00\x00\x00\x8A\x4D\x08\x83\xC0\x04\x86\x08\x5D\xC3", "xxxx????xxxxxxxxxx",
+				process, "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x08\xE8\x00\x00\x00\x00\x8D\x0C\x24", "xxxxxxxxxx????xxx",
 				start, end)))
 			{
-				const auto* const gts_fn = result + 8 + ProcUtil::Read<int32_t>(process, result + 4);
+				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
 				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
 		                                                                      // (keeps telling me to change %p -> %s and vice versa)
@@ -282,7 +282,7 @@ struct RobloxProcess
 						return;
 					}
 
-					printf("[%p] Frame Delay Offset: %zu\n", handle, delay_offset);
+					printf("[%p] Frame Delay Offset: %zu (%x)\n", handle, delay_offset, delay_offset);
 
 					fd_ptr = scheduler + delay_offset;
 
