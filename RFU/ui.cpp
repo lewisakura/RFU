@@ -68,6 +68,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			           L"Check for Updates");
 
 			auto* submenu = CreatePopupMenu();
+			AppendMenu(submenu, MF_STRING, RFU_FCS_NONE, L"None");
 			for (size_t i = 0; i < Settings::FPSCapValues.size(); i++)
 			{
 				auto value = Settings::FPSCapValues[i];
@@ -164,9 +165,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					if (result >= RFU_FCS_FIRST
 						&& result <= RFU_FCS_FIRST + Settings::FPSCapValues.size())
 					{
-						static double fcs_map[] = { 0.0, 30.0, 60.0, 75.0, 120.0, 144.0, 240.0 };
 						Settings::FPSCapSelection = result - RFU_FCS_FIRST;  // NOLINT(clang-diagnostic-implicit-int-conversion)
-						Settings::FPSCap = fcs_map[Settings::FPSCapSelection];
+						Settings::FPSCap = Settings::FPSCapSelection == 0 ? 0.0 : Settings::FPSCapValues[Settings::FPSCapSelection - 1];
 					}
 				}
 

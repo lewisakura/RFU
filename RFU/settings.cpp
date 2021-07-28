@@ -137,6 +137,20 @@ namespace Settings
 			}
 		}
 
+		if (FPSCapSelection > 0 && FPSCapSelection > FPSCapValues.size())
+		{
+			FPSCapSelection = 0;
+		}
+
+		for (auto& value : FPSCapValues)
+		{
+			value = std::fmin(std::fmax(value, -2147483648.0), 2147483647.0);
+		}
+
+		FPSCap = FPSCapSelection == 0 ? 0.0 : FPSCapValues[FPSCapSelection - 1];
+
+		Update();
+		
 		return true;
 	}
 

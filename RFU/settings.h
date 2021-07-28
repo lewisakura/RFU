@@ -1,6 +1,9 @@
 #pragma once
 
 #pragma pack(push, 1)
+#include <cstdint>
+#include <vector>
+
 struct SettingsIPC
 {
 	bool vsync_enabled;
@@ -19,7 +22,8 @@ struct SettingsIPC
 namespace Settings
 {
 	extern bool VSyncEnabled;
-	extern unsigned char FPSCapSelection;
+	extern std::vector<double> FPSCapValues;
+	extern uint32_t FPSCapSelection;
 	extern double FPSCap;
 	extern bool UnlockClient;
 	extern bool UnlockStudio;
