@@ -188,7 +188,29 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
 					{
 						//printf("[%p] Inst: %p\n", process, gts_fn + (inst - buffer));
-						return reinterpret_cast<const void*>(*reinterpret_cast<uint32_t*>(inst + 1));
+						return reinterpret_cast<const void*>(*reinterpret_cast<uint32_t*>(inst + 1));  // NOLINT(performance-no-int-to-ptr)
+					}
+				}
+			}
+			// ReSharper disable once CppDeclarationHidesLocal
+			// 55 8B EC 83 E4 F8 83 EC 14 56 E8 ?? ?? ?? ?? 8D 4C 24 10
+			else if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(  // NOLINT(clang-diagnostic-shadow)
+				process, "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x14\x56\xE8\x00\x00\x00\x00\x8D\x4C\x24\x10", "xxxxxxxxxxx????xxxx",
+				start, end)))
+			{
+				auto gts_fn = result + 15 + ProcUtil::Read<int32_t>(process, result + 11);
+
+				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn);
+
+				uint8_t buffer[0x100];
+				if (ProcUtil::Read(process, gts_fn, buffer, sizeof(buffer)))
+				{
+					if (auto inst = sigscan::scan("\xA1\x00\x00\x00\x00\x8B\x4D\xF4", "x????xxx", 
+						reinterpret_cast<uintptr_t>(buffer), 
+						reinterpret_cast<uintptr_t>(buffer) + 0x100))
+						// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
+					{
+						return reinterpret_cast<const void*>(*reinterpret_cast<uint32_t*>(inst + 1));  // NOLINT(performance-no-int-to-ptr)
 					}
 				}
 			}
