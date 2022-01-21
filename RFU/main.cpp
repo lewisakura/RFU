@@ -443,6 +443,16 @@ bool CheckRunning()
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	// set current directory to executable location (fixes settings issues when starting up)
+	//
+	// yes, I could make a separate --startup flag to do this, but there is no legitimate reason to have the
+	// settings file not be beside the executable anyway
+	char self[MAX_PATH];
+	GetModuleFileNameA(nullptr, self, MAX_PATH);
+	PathRemoveFileSpecA(self); // I'm aware this is deprecated but as long as it works I will keep using it for backwards compat
+
+	SetCurrentDirectoryA(self);
+
 	if (!Settings::Init())
 	{
 		char buffer[64];
