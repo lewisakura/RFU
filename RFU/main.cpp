@@ -145,6 +145,12 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 		printf("[%p] Process Base: %p\n", process, start);  // NOLINT(clang-diagnostic-format-pedantic)
 																  // (keeps telling me to change %p -> %s and vice versa)
 
+		if (info.hmodule.size < 1024 * 1024 * 10)
+		{
+			printf("[%p] Appears to be security daemon, ignoring (%zu)\n", process, info.hmodule.size);
+			return nullptr;
+		}
+			
 		if (ProcUtil::IsProcess64Bit(process))
 		{
 			printf("[%p] Is 64bit\n", process);
@@ -176,10 +182,10 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 		{
 			printf("[%p] Is 32bit\n", process);
 			if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
-				process, "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x08\xE8\x00\x00\x00\x00\x8D\x0C\x24", "xxxxxxxxxx????xxx",
+				process, "\x55\x8B\xEC\x83\xEC\x10\x56\xE8\x00\x00\x00\x00\x8B\xF0\x8D\x45\xF0", "xxxxxxxx????xxxxx",
 				start, end)))
 			{
-				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
+				const auto* const gts_fn = result + 12 + ProcUtil::Read<int32_t>(process, result + 8);
 
 				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
 																			  // (keeps telling me to change %p -> %s and vice versa)
