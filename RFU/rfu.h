@@ -2,7 +2,7 @@
 
 // ReSharper disable CppClangTidyCppcoreguidelinesMacroUsage
 #define RFU_VERSION "5.4.4"
-#define RFU_GITHUB_REPO "LewisTehMinerz/RFU"
+#define RFU_GITHUB_REPO "lewisakura/RFU"
 #define RFU_REGKEY "RFU"
 // ReSharper enable CppClangTidyCppcoreguidelinesMacroUsage
 
