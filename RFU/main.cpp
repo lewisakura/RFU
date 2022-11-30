@@ -161,8 +161,7 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 			{
 				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
-				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
-																			  // (keeps telling me to change %p -> %s and vice versa)
+				printf("[%p] GetTaskScheduler (Studio): %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
@@ -181,14 +180,15 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 		else
 		{
 			printf("[%p] Is 32bit\n", process);
+
+			// 55 8B EC 83 E4 F8 83 EC 08 E8 ?? ?? ?? ?? 8D 0C 24
 			if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(
-				process, "\x55\x8B\xEC\x83\xEC\x10\x56\xE8\x00\x00\x00\x00\x8B\xF0\x8D\x45\xF0", "xxxxxxxx????xxxxx",
+				process, "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x08\xE8\xDE\xAD\xBE\xEF\x8D\x0C\x24", "xxxxxxxxxx????xxx",
 				start, end)))
 			{
-				const auto* const gts_fn = result + 12 + ProcUtil::Read<int32_t>(process, result + 8);
+				const auto* const gts_fn = result + 14 + ProcUtil::Read<int32_t>(process, result + 10);
 
-				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
-																			  // (keeps telling me to change %p -> %s and vice versa)
+				printf("[%p] GetTaskScheduler (LTCG): %p\n", process, gts_fn); // NOLINT(clang-diagnostic-format-pedantic)
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof buffer))
@@ -204,6 +204,28 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 				}
 			}
 			// ReSharper disable once CppDeclarationHidesLocal
+			// 55 8B EC 83 EC 10 56 E8 ?? ?? ?? ?? 8B F0 8D 45 F0
+			else if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(  // NOLINT(clang-diagnostic-shadow)
+				process, "\x55\x8B\xEC\x83\xEC\x10\x56\xE8\x00\x00\x00\x00\x8B\xF0\x8D\x45\xF0", "xxxxxxxx????xxxxx",
+				start, end)))
+			{
+				auto gts_fn = result + 12 + ProcUtil::Read<int32_t>(process, result + 8);
+
+				printf("[%p] GetTaskScheduler (Non-LTCG): %p\n", process, gts_fn);
+
+				uint8_t buffer[0x100];
+				if (ProcUtil::Read(process, gts_fn, buffer, sizeof(buffer)))
+				{
+					if (auto inst = sigscan::scan("\xA1\x00\x00\x00\x00\x8B\x4D\xF4", "x????xxx", 
+						reinterpret_cast<uintptr_t>(buffer), 
+						reinterpret_cast<uintptr_t>(buffer) + 0x100))
+							// mov eax, <TaskSchedulerPtr>; mov ecx, [ebp-0Ch])
+						{
+							return reinterpret_cast<const void*>(*reinterpret_cast<uint32_t*>(inst + 1));  // NOLINT(performance-no-int-to-ptr)
+						}
+				}
+			}
+			// ReSharper disable once CppDeclarationHidesLocal
 			// 55 8B EC 83 E4 F8 83 EC 14 56 E8 ?? ?? ?? ?? 8D 4C 24 10
 			else if (const auto* const result = static_cast<const uint8_t*>(ProcUtil::ScanProcess(  // NOLINT(clang-diagnostic-shadow)
 				process, "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x14\x56\xE8\x00\x00\x00\x00\x8D\x4C\x24\x10", "xxxxxxxxxxx????xxxx",
@@ -211,7 +233,7 @@ const void* FindTaskScheduler(HANDLE process, const char** error = nullptr)
 			{
 				auto gts_fn = result + 15 + ProcUtil::Read<int32_t>(process, result + 11);
 
-				printf("[%p] GetTaskScheduler: %p\n", process, gts_fn);
+				printf("[%p] GetTaskScheduler (UWP): %p\n", process, gts_fn);
 
 				uint8_t buffer[0x100];
 				if (ProcUtil::Read(process, gts_fn, buffer, sizeof(buffer)))
