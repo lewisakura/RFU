@@ -10,7 +10,7 @@
 
 bool HttpRequest(const char* url, std::string& response)
 {
-	if (auto* const internet = InternetOpenA("LewisTehMinerz/RFU", INTERNET_OPEN_TYPE_PRECONFIG,
+	if (auto* const internet = InternetOpenA("RFU/" RFU_VERSION " (https://github.com/" RFU_GITHUB_REPO ")", INTERNET_OPEN_TYPE_PRECONFIG,
 		nullptr, nullptr, NULL))
 	{
 		if (auto* const request = InternetOpenUrlA(internet, url, nullptr, 0,
