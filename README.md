@@ -8,8 +8,7 @@ Hi all. I think it's time for this project to finally be retired. There are a fe
 merge in the fixes. This had led to a very terrible codebase that no longer lines up with the original, so I can't simply merge in changes
 anymore. If I could, I'd rewrite this in my own way, but I don't have the motive when there's a tool that's better maintained.
 
-RFU has overstayed its welcome, and it's time for it to go. With the advent of the rewritten Roblox FPS Unlocker 5, and the reasonings above,
-it's time to say goodbye.
+RFU has overstayed its welcome. With the advent of the rewritten Roblox FPS Unlocker 5, and the reasonings above, it's time to say goodbye.
 
 Thank you for using RFU. I hope I can write some more tools for you soon. And most of all, thank you to Axstin for maintaining one of the
 most important tools for the Roblox platform.
