@@ -1,3 +1,23 @@
+# Retirement Notice
+Hi all. I think it's time for this project to finally be retired. There are a few of reasons for this:
+
+- For the most part, the gripes I had with the original Roblox FPS Unlocker are resolved, so I myself will move over to using it.
+- Due to the upstream rewrites, I can no longer keep up with manually merging in the changes without bugfree guarantees.
+- I've realised I'm way out of my depth. I'm not a good reverse engineer by any means.
+- Unfortunately, this code is now horribly spaghetti. This is mainly my own downfall; I didn't want to merge in certain changes but wanted to
+merge in the fixes. This had led to a very terrible codebase that no longer lines up with the original, so I can't simply merge in changes
+anymore. If I could, I'd rewrite this in my own way, but I don't have the motive when there's a tool that's better maintained.
+
+RFU has overstayed its welcome, and it's time for it to go. With the advent of the rewritten Roblox FPS Unlocker 5, and the reasonings above,
+it's time to say goodbye.
+
+Thank you for using RFU. I hope I can write some more tools for you soon. And most of all, thank you to Axstin for maintaining one of the
+most important tools for the Roblox platform.
+
+And of course, in case you need it, go and grab the original here: https://github.com/axstin/rbxfpsunlocker
+
+I've pushed one last release with this same text so that you get prompted to download it if you are still using it.
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/LewisTehMinerz/RFU/master/repository-banner.png">
 </p>
